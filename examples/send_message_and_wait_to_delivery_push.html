@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="text/javascript" src="../oneapi.js"></script>
+        <script type="text/javascript" src="examples.js"></script>
+        <script type="text/javascript" src="config.js"></script>
+        
+        <title>OneAPI example - sendSMS_notify()</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <script>            
+            function runExample() {
+                // check username & password values
+                if(userName == 'REPLACE_WITH_YOUR_USERNAME' || userPassword == 'REPLACE_WITH_YOUR_PASSWORD') {
+                    log("Warning: Replace value of <b>userName</b> and <b>userPassword</b> variables with your username and password or add to url <b>username</b> and <b>password</b> query params");
+                    return;
+                }
+                
+                // API init                
+                initApi();
+                
+                // login
+                log("Log in ...");
+                oneapi.login(userName,userPassword,function(isOk,oResponse) {                    
+                    if(!isOk) { // oResponse is DmApiError
+                        log("Error: Unable to login:" + oResponse.getErrorText());
+                        return;
+                    } else { // oResponse is DmUserCredentials
+                        log("Login successful.");
+                        if(!oResponse.isVerified()) {
+                            log("Warning: Please verify your account.");
+                        }
+                        
+                        // fetch and display customer profile
+                        oneapi.getCustomerProfile('me',function(isOk,oProfile) {
+                            if(!isOk) { // oResponse is DmApiError
+                                log("Error: Unable to get Customer profile:" + oProfile.getErrorText());
+                            } else { // oResponse is DmCustomerProfile
+                                sendSMS_notifyExample(oProfile);
+                            }
+                        });
+                    }
+                });
+                
+            }
+        </script>
+    </head>
+    <body onload="runExample()">
+        <div id="log"></div>
+    </body>
+</html>

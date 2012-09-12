@@ -1,0 +1,29 @@
+# -- fm lib --------------------------------------------------------------------
+src/lib/fm/fm.js        
+
+src/lib/fm/ob/ob.Object.js
+
+src/lib/fm/ut/ut.UtAjax.js
+src/lib/fm/ut/ut.UtTimer.js
+src/lib/fm/ut/ut.UtRegistry.js
+
+src/lib/fm/dm/dm.DmObject.js
+src/lib/fm/dm/dm.DmList.js
+
+src/lib/fm/lm/lm.LmObject.js
+src/lib/fm/app/app.AppObject.js
+
+# tests
+# src/lib/fm/tests/tst.TstGeneric.js
+# src/lib/fm/tests/tst.TstAjax.js
+# src/lib/fm/tests/tst.TstDmList.js
+
+# -- oneapi classes ------------------------------------------------------------
+src/oa/config/oa.ClassConfig.js
+src/oa/config/oa.ListConfig.js
+src/oa/config/oa.ClassDecorations.js
+src/oa/oa.AppOneApi.js
+
+# -- oneapi api ----------------------------------------------------------------
+src/oa/api.js
+
