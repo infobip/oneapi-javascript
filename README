@@ -1,9 +1,9 @@
-proxy - PHP OneAPI proxy script
-
+src - sources
 bin - utils
     combine.php - combine all source files to one script
         Usage:  php bin/combine.php src/js.list oneapi.js
 
+proxy - PHP OneAPI proxy script
 
 examples - examples
 

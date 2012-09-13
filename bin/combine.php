@@ -1,6 +1,8 @@
 <?php
 if(sizeof($argv) != 3) die("Wrong number of arguments");
 
+$basedir=pathinfo($_SERVER['PHP_SELF'],PATHINFO_DIRNAME) . "/../";
+
 $fname = $argv[1];
 echo "fname:" . $fname;
 $fnameout = $argv[2];
@@ -17,7 +19,7 @@ while (($lin = fgets($fh)) !== FALSE) {
     if(strlen($lin) > 0) {
         echo "[" . $lin . "]\n";
         fwrite($fhout, "// file: " . $lin . "\n");
-        $ct = file_get_contents($lin);
+        $ct = file_get_contents($basedir . $lin);
         fwrite($fhout, $ct . "\n");
     }
 }

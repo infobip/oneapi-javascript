@@ -6607,40 +6607,6 @@ if(typeof(oneapi) == 'undefined') {
         return oneapi.session.app.logout();
     }
 
-    oneapi.verifyAccount = function(vercode,callbackFn) {
-        return oneapi.session.app.verifyAccount(vercode,callbackFn);
-    }
-    
-    oneapi.signup = function(oCustomer,callbackFn) {
-        return oneapi.session.app.signup(oCustomer,callbackFn);
-    }
-
-    oneapi.generateCaptcha = function(width,height,imageFormat,domNodeId,callbackFn) {        
-        return oneapi.session.app.getCaptcha(width,height,imageFormat,function(isok, oCaptcha) {
-            // obradi, pozovi cb
-                var url = oCaptcha.getImageUrl();
-                var node = document.getElementById(domNodeId);                
-                if(node) {
-                    node.src = url;
-                }
-
-            if(FM.isset(callbackFn) && callbackFn && FM.isFunction(callbackFn)) {
-                callbackFn(isok, oCaptcha);
-            };
-        })
-    }
-
-    oneapi.checkPasswordStrength = function(password,callbackFn) {
-        return oneapi.session.app.checkPasswordStrength(password,callbackFn);
-    }
-
-    oneapi.generatePassword = function(callbackFn) {
-        return oneapi.session.app.generatePassword(callbackFn);
-    }
-
-    oneapi.checkUsernameAvialiability = function(username,callbackFn) {
-        return oneapi.session.app.checkUsernameAvialiability(username,callbackFn);
-    }
 
     /*
     * Customer
@@ -6733,25 +6699,6 @@ if(typeof(oneapi) == 'undefined') {
             callbackData,
             clientCorrelator,
             callbackFn
-        );
-    }
-
-    oneapi.getAvailableNumbersToBuy = function(
-        countryId, dateFrom, dateTo, criteria, free,
-        page, pageSize,
-        callbackFn
-    ) {
-        return oneapi.session.app.getAvailableNumbersToBuy(
-            countryId,dateFrom,dateTo,criteria,free,page,pageSize,callbackFn
-        );
-    }
-
-    oneapi.getFreeTrialNumber = function(
-        notifyURL,
-        callbackFn
-    ) {
-        return oneapi.session.app.getFreeTrialNumber(
-            notifyURL,callbackFn
         );
     }
 
