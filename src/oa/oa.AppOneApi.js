@@ -113,6 +113,7 @@ OA.AppOneApi.prototype.getCaptcha = function(width,height,imageFormat,cbfn) {
 }
 
 // --  auth ------------------------------------------------------------
+/*
 OA.AppOneApi.prototype.signup = function(oSignupData,cbfn) {
     var me = this;
     
@@ -147,7 +148,8 @@ OA.AppOneApi.prototype.signup = function(oSignupData,cbfn) {
         onListError: function(sender,data) {
             dmlist.removeListener(lstnr);
             dmlist.dispose();            
-            me.setLastError(me.getErrorObject(data));
+            me.setLastError(me.getErrorObject(data));            
+            me.fireEvent('onAuthError',data);
             callbackFn(false,OA.apiLastErr);
             return true;
         }
@@ -155,6 +157,7 @@ OA.AppOneApi.prototype.signup = function(oSignupData,cbfn) {
     dmlist.addListener(lstnr);
     dmlist.getData();            
 }
+*/
 
 OA.AppOneApi.prototype.saveCredentials = function() {
     if(OA.apiAuth)  {        
@@ -164,8 +167,8 @@ OA.AppOneApi.prototype.saveCredentials = function() {
 }
 
 OA.AppOneApi.prototype.loadCredentials = function() {
-    var authArr = FM.loadCookie('IbAuthCookieInfo',true);    
-    var authKey = FM.loadCookie('IbAuthCookie');
+    var authArr = FM.loadCookie('IbAuthCookieInfo');    
+    var authKey = FM.loadCookie('IbAuthCookie',true);
     authArr['ibAuthCookie'] = authKey;
     authArr = authArr && FM.isObject(authArr) ? authArr : {
         username: "",
@@ -736,22 +739,14 @@ OA.AppOneApi.prototype.isAuthenticated = function() {
 }
 
 OA.AppOneApi.prototype.onDoLogin = function(sender,evdata) {
-    this.login(
-        FM.getAttr(evdata,'object',null),
-        FM.getAttr(evdata,'callback',null)
-    );
+    var dmobj = FM.getAttr(evdata,'object',null);
+    if(!dmobj) return;
+    
+    this.login(dmobj.getAttr('username',''), dmobj.getAttr('password',''),FM.getAttr(evdata,'callback',null));
 }
 
 OA.AppOneApi.prototype.onDoLogout = function(sender,evdata) {
     this.logout(FM.getAttr(evdata,'callback',null));
-}
-
-OA.AppOneApi.prototype.onSignup = function(sender,evdata) {
-    this.signup(FM.getAttr(evdata,'object',null),FM.getAttr(evdata,'callback',null));
-}
-
-OA.AppOneApi.prototype.onSignupVerify = function(sender,evdata) {
-    this.verifyAccount(FM.getAttr(evdata,'object',null),FM.getAttr(evdata,'callback',null));
 }
 
 // --  customer --------------------------------------------------------
@@ -761,6 +756,7 @@ OA.AppOneApi.prototype.getCustomerId = function() {
 
 OA.AppOneApi.prototype.getCustomerProfile = function(id,callbackFn) {
     var oProfile = null;
+    var me = this;
     
     // ako je new
     if(id == 'new') {
@@ -792,18 +788,16 @@ OA.AppOneApi.prototype.getCustomerProfile = function(id,callbackFn) {
         return this.fetchCustomerProfile(id,function(ok, cp) {
             /*
             if(ok && id == '') {
-                FM.saveCookie('IbAuthCookie',OA.apiAuth.getAttr('IbAuthCookie',''),1);
-                FM.saveCookie('IbUser',{
-                    id: cp.getAttr('id',''),
-                    username: cp.getAttr('username',''),
-                    token: OA.apiAuth.getAttr('IbAuthCookie',''),
-                    verified: OA.apiAuth.getAttr('verified',true)
-                },1);
+                OA.apiAuth.setAttr('username',cp.getAttr('username',''))
+                me.saveCredentials();
             }*/
             if(callbackFn) {
                 callbackFn(ok,cp);
             }
         });
+    } else {
+        OA.apiAuth.setAttr('username',cp.getAttr('username',''))
+        this.saveCredentials();        
     }
 
     // kraj

@@ -229,7 +229,7 @@ FM.DmList.prototype._ajaxCall = function(args) {
     // ajax config
     var utAjax = new FM.UtAjax({
         url: url,
-        method: this.resolvePropertyValue('config.method','',args),
+        method: this.resolvePropertyValue('config.method','',this),
         contentType: this.resolvePropertyValue('config.contentType','application/x-www-form-urlencoded',args),
         responseFormat: this.resolvePropertyValue('config.responseFormat','TEXT',args),
         validResponseCodes: this.resolvePropertyValue('config.validResponseCodes','',args),

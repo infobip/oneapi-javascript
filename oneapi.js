@@ -1303,7 +1303,7 @@ FM.dateLocalFormat = function(d) {
         var s = d.toLocaleString();
     } catch(err) {
         alert(err)
-        };
+    };
     var i = s.indexOf("GMT");
     if(i >= 0) s = s.substr(0,i);
     return(s);
@@ -1321,7 +1321,27 @@ FM.timestamp = function(date) {
     return Math.round((FM.isset(date) ? date : new Date()).getTime() / 1000);
 }
 
+FM.getArgs = function() {
+    return decodeURIComponent(window.location.search.slice(1))
+    .split('&')
+    .reduce(function _reduce (a,b) {
+        b = b.split('=');
+        a[b[0]] = b[1];
+        return a;
+    }, {});    
+}
 
+
+FM.expandToFullSCreen = function(elmid) {
+    var elem = document.getElementById(elmid);
+    if (elem.requestFullScreen) {
+        elem.requestFullScreen();
+    } else if (elem.mozRequestFullScreen) {
+        elem.mozRequestFullScreen();
+    } else if (elem.webkitRequestFullScreen) {
+        elem.webkitRequestFullScreen();
+    }    
+}
 // file: src/lib/fm/ob/ob.Object.js
 // -- Basic FM class -----------------------------------------------------------
 /**
@@ -2940,7 +2960,7 @@ FM.DmList.prototype._ajaxCall = function(args) {
     // ajax config
     var utAjax = new FM.UtAjax({
         url: url,
-        method: this.resolvePropertyValue('config.method','',args),
+        method: this.resolvePropertyValue('config.method','',this),
         contentType: this.resolvePropertyValue('config.contentType','application/x-www-form-urlencoded',args),
         responseFormat: this.resolvePropertyValue('config.responseFormat','TEXT',args),
         validResponseCodes: this.resolvePropertyValue('config.validResponseCodes','',args),
@@ -3758,6 +3778,10 @@ FM.LmObject.prototype.isExecuted = function() {
     return this.executed;
 }
 
+FM.LmObject.prototype.getApp = function() {
+    return this.app;
+}
+
 FM.LmObject.prototype.getDmObject = function() {
     var dmobj = null, f = this.getAttr('dmObject',null);
 
@@ -4213,7 +4237,7 @@ FM.extendClass(OA.DmTimezone, FM.DmObject);
 OA.DmTimezone.prototype.objectSubClass = "";
 
 // methods
-OA.DmTimezone.prototype._init = function(attrs) {
+OA.DmTimezone.prototype._init = function(attrs) {            
     this._super("_init",attrs, {
             id: '',
             name: '',
@@ -4221,9 +4245,28 @@ OA.DmTimezone.prototype._init = function(attrs) {
             dstOffset: '',
             dstStartTime: '',
             dstEndTime: '',
-            countryId: ''
+            countryId: '',
+            title: ''
     });
     this.objectSubClass = "DmTimezone";
+
+    var utcOff = parseInt(this.getAttr('standardUtcOffset',0));
+    var utcH = utcOff / 60.0;
+    var offH = Math.floor(Math.abs(utcH)) * (utcH < 0 ? -1 : 1);
+    var offM = Math.floor(Math.abs(utcH - offH) * 60);
+    var offStr = '(UTC ' + (offH < 0 ? '-' : '+');
+    
+    offStr += (offH < 10 && offH > -10 ?
+        '0' + '' + Math.abs(offH) :
+        '' + Math.abs(offH)) +
+        ':' +
+        (offM < 10 && offM > -10 ?
+        '0' + '' + offM :
+        '' + offM) +
+        ') '
+    ;
+    
+    this.setAttr('title',offStr + this.getAttr('name',''));
 }
         
 OA.DmTimezone.prototype.getDataID = function() {
@@ -4654,6 +4697,11 @@ OA.setProxy = function(url) {
     OA.proxyURL = FM.isset(url) && url ? url : '';
 }
 
+OA.setAPIurl = function(url) {  
+    OA.apiURL = FM.isset(url) && url ? url : '';
+}
+
+
 //options = {dmList: this, arguments: args};
 OA.getApiUrl = function(options) {
     var dmList = FM.getAttr(options,'dmList',null);
@@ -4662,7 +4710,7 @@ OA.getApiUrl = function(options) {
     OA.proxyURL :
     OA.apiURL + (
         dmList && FM.isset(dmList['getAttr']) ? 
-        dmList.getAttr('config.resourcePath','') : 
+        dmList.getProperty('config.resourcePath','') : 
         ''
         )
     ;
@@ -4695,8 +4743,7 @@ OA.getApiHeaders = function(options) {
 }
 
 // -- ajax call method ---------------------------------------------------------
-OA.getApiMethod = function(options) {
-    var dmList = FM.getAttr(options,'dmList',null);
+OA.getApiMethod = function(dmList) {
     if(OA.proxyURL != '') {
         return 'POST';
     } else {
@@ -5497,6 +5544,7 @@ OA.AppOneApi.prototype.getCaptcha = function(width,height,imageFormat,cbfn) {
 }
 
 // --  auth ------------------------------------------------------------
+/*
 OA.AppOneApi.prototype.signup = function(oSignupData,cbfn) {
     var me = this;
     
@@ -5531,7 +5579,8 @@ OA.AppOneApi.prototype.signup = function(oSignupData,cbfn) {
         onListError: function(sender,data) {
             dmlist.removeListener(lstnr);
             dmlist.dispose();            
-            me.setLastError(me.getErrorObject(data));
+            me.setLastError(me.getErrorObject(data));            
+            me.fireEvent('onAuthError',data);
             callbackFn(false,OA.apiLastErr);
             return true;
         }
@@ -5539,6 +5588,7 @@ OA.AppOneApi.prototype.signup = function(oSignupData,cbfn) {
     dmlist.addListener(lstnr);
     dmlist.getData();            
 }
+*/
 
 OA.AppOneApi.prototype.saveCredentials = function() {
     if(OA.apiAuth)  {        
@@ -5548,8 +5598,8 @@ OA.AppOneApi.prototype.saveCredentials = function() {
 }
 
 OA.AppOneApi.prototype.loadCredentials = function() {
-    var authArr = FM.loadCookie('IbAuthCookieInfo',true);    
-    var authKey = FM.loadCookie('IbAuthCookie');
+    var authArr = FM.loadCookie('IbAuthCookieInfo');    
+    var authKey = FM.loadCookie('IbAuthCookie',true);
     authArr['ibAuthCookie'] = authKey;
     authArr = authArr && FM.isObject(authArr) ? authArr : {
         username: "",
@@ -6120,22 +6170,14 @@ OA.AppOneApi.prototype.isAuthenticated = function() {
 }
 
 OA.AppOneApi.prototype.onDoLogin = function(sender,evdata) {
-    this.login(
-        FM.getAttr(evdata,'object',null),
-        FM.getAttr(evdata,'callback',null)
-    );
+    var dmobj = FM.getAttr(evdata,'object',null);
+    if(!dmobj) return;
+    
+    this.login(dmobj.getAttr('username',''), dmobj.getAttr('password',''),FM.getAttr(evdata,'callback',null));
 }
 
 OA.AppOneApi.prototype.onDoLogout = function(sender,evdata) {
     this.logout(FM.getAttr(evdata,'callback',null));
-}
-
-OA.AppOneApi.prototype.onSignup = function(sender,evdata) {
-    this.signup(FM.getAttr(evdata,'object',null),FM.getAttr(evdata,'callback',null));
-}
-
-OA.AppOneApi.prototype.onSignupVerify = function(sender,evdata) {
-    this.verifyAccount(FM.getAttr(evdata,'object',null),FM.getAttr(evdata,'callback',null));
 }
 
 // --  customer --------------------------------------------------------
@@ -6145,6 +6187,7 @@ OA.AppOneApi.prototype.getCustomerId = function() {
 
 OA.AppOneApi.prototype.getCustomerProfile = function(id,callbackFn) {
     var oProfile = null;
+    var me = this;
     
     // ako je new
     if(id == 'new') {
@@ -6176,18 +6219,16 @@ OA.AppOneApi.prototype.getCustomerProfile = function(id,callbackFn) {
         return this.fetchCustomerProfile(id,function(ok, cp) {
             /*
             if(ok && id == '') {
-                FM.saveCookie('IbAuthCookie',OA.apiAuth.getAttr('IbAuthCookie',''),1);
-                FM.saveCookie('IbUser',{
-                    id: cp.getAttr('id',''),
-                    username: cp.getAttr('username',''),
-                    token: OA.apiAuth.getAttr('IbAuthCookie',''),
-                    verified: OA.apiAuth.getAttr('verified',true)
-                },1);
+                OA.apiAuth.setAttr('username',cp.getAttr('username',''))
+                me.saveCredentials();
             }*/
             if(callbackFn) {
                 callbackFn(ok,cp);
             }
         });
+    } else {
+        OA.apiAuth.setAttr('username',cp.getAttr('username',''))
+        this.saveCredentials();        
     }
 
     // kraj

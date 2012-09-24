@@ -55,6 +55,10 @@ FM.LmObject.prototype.isExecuted = function() {
     return this.executed;
 }
 
+FM.LmObject.prototype.getApp = function() {
+    return this.app;
+}
+
 FM.LmObject.prototype.getDmObject = function() {
     var dmobj = null, f = this.getAttr('dmObject',null);
 

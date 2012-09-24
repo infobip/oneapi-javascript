@@ -194,7 +194,7 @@ FM.extendClass(OA.DmTimezone, FM.DmObject);
 OA.DmTimezone.prototype.objectSubClass = "";
 
 // methods
-OA.DmTimezone.prototype._init = function(attrs) {
+OA.DmTimezone.prototype._init = function(attrs) {            
     this._super("_init",attrs, {
             id: '',
             name: '',
@@ -202,9 +202,28 @@ OA.DmTimezone.prototype._init = function(attrs) {
             dstOffset: '',
             dstStartTime: '',
             dstEndTime: '',
-            countryId: ''
+            countryId: '',
+            title: ''
     });
     this.objectSubClass = "DmTimezone";
+
+    var utcOff = parseInt(this.getAttr('standardUtcOffset',0));
+    var utcH = utcOff / 60.0;
+    var offH = Math.floor(Math.abs(utcH)) * (utcH < 0 ? -1 : 1);
+    var offM = Math.floor(Math.abs(utcH - offH) * 60);
+    var offStr = '(UTC ' + (offH < 0 ? '-' : '+');
+    
+    offStr += (offH < 10 && offH > -10 ?
+        '0' + '' + Math.abs(offH) :
+        '' + Math.abs(offH)) +
+        ':' +
+        (offM < 10 && offM > -10 ?
+        '0' + '' + offM :
+        '' + offM) +
+        ') '
+    ;
+    
+    this.setAttr('title',offStr + this.getAttr('name',''));
 }
         
 OA.DmTimezone.prototype.getDataID = function() {

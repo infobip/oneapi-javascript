@@ -1302,7 +1302,7 @@ FM.dateLocalFormat = function(d) {
         var s = d.toLocaleString();
     } catch(err) {
         alert(err)
-        };
+    };
     var i = s.indexOf("GMT");
     if(i >= 0) s = s.substr(0,i);
     return(s);
@@ -1320,3 +1320,24 @@ FM.timestamp = function(date) {
     return Math.round((FM.isset(date) ? date : new Date()).getTime() / 1000);
 }
 
+FM.getArgs = function() {
+    return decodeURIComponent(window.location.search.slice(1))
+    .split('&')
+    .reduce(function _reduce (a,b) {
+        b = b.split('=');
+        a[b[0]] = b[1];
+        return a;
+    }, {});    
+}
+
+
+FM.expandToFullSCreen = function(elmid) {
+    var elem = document.getElementById(elmid);
+    if (elem.requestFullScreen) {
+        elem.requestFullScreen();
+    } else if (elem.mozRequestFullScreen) {
+        elem.mozRequestFullScreen();
+    } else if (elem.webkitRequestFullScreen) {
+        elem.webkitRequestFullScreen();
+    }    
+}

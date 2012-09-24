@@ -9,6 +9,11 @@ OA.setProxy = function(url) {
     OA.proxyURL = FM.isset(url) && url ? url : '';
 }
 
+OA.setAPIurl = function(url) {  
+    OA.apiURL = FM.isset(url) && url ? url : '';
+}
+
+
 //options = {dmList: this, arguments: args};
 OA.getApiUrl = function(options) {
     var dmList = FM.getAttr(options,'dmList',null);
@@ -17,7 +22,7 @@ OA.getApiUrl = function(options) {
     OA.proxyURL :
     OA.apiURL + (
         dmList && FM.isset(dmList['getAttr']) ? 
-        dmList.getAttr('config.resourcePath','') : 
+        dmList.getProperty('config.resourcePath','') : 
         ''
         )
     ;
@@ -50,8 +55,7 @@ OA.getApiHeaders = function(options) {
 }
 
 // -- ajax call method ---------------------------------------------------------
-OA.getApiMethod = function(options) {
-    var dmList = FM.getAttr(options,'dmList',null);
+OA.getApiMethod = function(dmList) {
     if(OA.proxyURL != '') {
         return 'POST';
     } else {
