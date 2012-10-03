@@ -214,7 +214,7 @@ FM.DmList.prototype._ajaxCall = function(args) {
         'config.headers',{},fnargs
     );
     for(var hname in hdrs) {
-        hdrs[hname] = FM.applyTemplate(args,hdrs[hname],false,true);
+        hdrs[hname] = FM.applyTemplate(args,hdrs[hname],false,true).replace(/\s*\[\:.*?\]\s*/g, "");
     }
     var url = FM.applyTemplate(
         args,
@@ -222,7 +222,8 @@ FM.DmList.prototype._ajaxCall = function(args) {
             'config.url','',fnargs
         ),
         false,true
-    );
+    );  
+    
 
     var authArgs = this.resolvePropertyValue('config.auth',{},fnargs);    
         

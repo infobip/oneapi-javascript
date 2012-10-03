@@ -2096,6 +2096,7 @@ FM.UtAjaxJob.prototype.onAjaxStateError = function(oAjax,errmsg) {
     this.discardJob(errmsg);
 }
 
+
 FM.UtAjaxJob.prototype.onAjaxStateStart = function(oAjax,data) {
     this.log("onAjaxStateStart",data,FM.logLevels.info,this.getFullClassName());
     this.fireEvent("onGetDataFromServer",{job: this, connection: oAjax, event: 'start', params: data});
@@ -2945,7 +2946,7 @@ FM.DmList.prototype._ajaxCall = function(args) {
         'config.headers',{},fnargs
     );
     for(var hname in hdrs) {
-        hdrs[hname] = FM.applyTemplate(args,hdrs[hname],false,true);
+        hdrs[hname] = FM.applyTemplate(args,hdrs[hname],false,true).replace(/\s*\[\:.*?\]\s*/g, "");
     }
     var url = FM.applyTemplate(
         args,
@@ -2953,7 +2954,8 @@ FM.DmList.prototype._ajaxCall = function(args) {
             'config.url','',fnargs
         ),
         false,true
-    );
+    );  
+    
 
     var authArgs = this.resolvePropertyValue('config.auth',{},fnargs);    
         
@@ -5116,7 +5118,7 @@ FM.DmList.addConfiguration('CUSTOMER_profile_update', {
     
     // ajax config
     method: OA.getApiMethod,
-    resourceMethod: 'PUT',
+    resourceMethod: 'POST',
     contentType: 'application/x-www-form-urlencoded',
     params: {
         id: true,
@@ -6583,6 +6585,7 @@ if(typeof(oneapi) == 'undefined') {
                 
         return oneapi.session.app;
     }
+    
 
     /*
      * Events

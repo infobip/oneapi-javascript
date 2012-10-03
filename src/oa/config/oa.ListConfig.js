@@ -428,7 +428,7 @@ FM.DmList.addConfiguration('CUSTOMER_profile_update', {
     
     // ajax config
     method: OA.getApiMethod,
-    resourceMethod: 'PUT',
+    resourceMethod: 'POST',
     contentType: 'application/x-www-form-urlencoded',
     params: {
         id: true,

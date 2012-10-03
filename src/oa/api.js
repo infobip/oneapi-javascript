@@ -34,6 +34,7 @@ if(typeof(oneapi) == 'undefined') {
                 
         return oneapi.session.app;
     }
+    
 
     /*
      * Events
