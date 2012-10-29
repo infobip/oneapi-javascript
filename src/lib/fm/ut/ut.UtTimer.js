@@ -68,6 +68,24 @@ FM.UtTimerJob.prototype.resume = function() {
     this.suspended = false;
 }
 
+FM.UtTimerJob.prototype.dispose = function() {    
+    FM.UtTimer.suspended = true;
+    
+    this.suspended = true;
+    this.started = false;
+    
+    var nlist = [];
+    for(var i=0; i < FM.UtTimer.jobsList.length; i++) {
+        if(FM.UtTimer.jobsList[i] != this) {
+            nlist.push(FM.UtTimer.jobsList[i]);
+        }
+    }
+    FM.UtTimer.jobsList = nlist;
+    
+    this.removeAllListeners();
+    
+}
+
 // static
 FM.UtTimerJob.className = "UtTimerJob";
 FM.UtTimerJob.fullClassName = 'ut.UtTimerJob';

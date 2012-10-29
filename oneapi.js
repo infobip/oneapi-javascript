@@ -1,3 +1,4 @@
+if(typeof(window['FM']) == 'undefined') {
 // file: src/lib/fm/fm.js
 if(typeof(FM) == 'undefined') {
     /**
@@ -106,9 +107,11 @@ FM.applyTemplate = function(attrs,template,escapeValues,encodeValues) {
     if(attrs) {
         FM.forEach(attrs,function(name,value) {
             if(!FM.isset(value) || !value) value = '';
-            if(!FM.isFunction(value) && !FM.isObject(value) && !FM.isArray(value)) {
+            if(!FM.isFunction(value) && !FM.isObject(value) && !FM.isArray(value)) {                
                 if(FM.isset(encodeValues) && encodeValues == true) {
                     val = FM.urlEncode(value.toString());
+                } else {
+                    val = value;
                 }
                 if(FM.isset(escapeValues) && escapeValues != false) {
                     val = FM.escapeStr(val);
@@ -426,8 +429,9 @@ FM.unserialize = function(str,def) {
     return def;
 }
 
-FM.deleteCookie = function(name) {
-    document.cookie = name + '=; expires=Thu, 01-Jan-70 00:00:01 GMT;';
+FM.deleteCookie = function(name,domain) {
+    FM.saveCookie(name,"",0,domain);
+//document.cookie = name + '=; expires=Thu, 01-Jan-70 00:00:01 GMT;';
 }
 
 FM.saveCookie = function(name,value,expiredays,domain) {
@@ -1342,6 +1346,10 @@ FM.expandToFullSCreen = function(elmid) {
         elem.webkitRequestFullScreen();
     }    
 }
+
+
+
+
 // file: src/lib/fm/ob/ob.Object.js
 // -- Basic FM class -----------------------------------------------------------
 /**
@@ -1478,6 +1486,17 @@ FM.Object.prototype.removeListener = function(oListener) {
 
     return true;
 }
+
+/**
+* Remove all listeners
+* @public     
+* @function 
+*/   
+FM.Object.prototype.removeAllListeners = function() {
+    this.listenersArr = {};
+    return true;
+}
+
 
 /**
 * Event function
@@ -2292,6 +2311,24 @@ FM.UtTimerJob.prototype.suspend = function() {
 FM.UtTimerJob.prototype.resume = function() {
     if(!this.isStarted()) this.start();
     this.suspended = false;
+}
+
+FM.UtTimerJob.prototype.dispose = function() {    
+    FM.UtTimer.suspended = true;
+    
+    this.suspended = true;
+    this.started = false;
+    
+    var nlist = [];
+    for(var i=0; i < FM.UtTimer.jobsList.length; i++) {
+        if(FM.UtTimer.jobsList[i] != this) {
+            nlist.push(FM.UtTimer.jobsList[i]);
+        }
+    }
+    FM.UtTimer.jobsList = nlist;
+    
+    this.removeAllListeners();
+    
 }
 
 // static
@@ -4142,8 +4179,8 @@ OA.DmUserLoginData.prototype.objectSubClass = "";
 // methods
 OA.DmUserLoginData.prototype._init = function(attrs) {
     this._super("_init",attrs, {
-            username: '',
-            password: ''
+        username: '',
+        password: ''
     });
     this.objectSubClass = "DmUserLoginData";
 }
@@ -4158,43 +4195,6 @@ OA.DmUserLoginData.fullClassName = 'dm.DmUserLoginData';
 
 FM.DmObject.addSubClassType('UserLoginData',OA.DmUserLoginData);
 
-// -- user signup data ---------------------------------------------------------
-OA.DmUserSignupData = function() {
-    this._init.apply(this, arguments); 
-}
-
-FM.extendClass(OA.DmUserSignupData, FM.DmObject); 
-
-// properties
-OA.DmUserSignupData.prototype.objectSubClass = "";
-
-// methods
-OA.DmUserSignupData.prototype._init = function(attrs) {
-    this._super("_init",attrs, {
-            username: '',
-            forename: '',
-            surname: '',
-            email: '',
-            gsm: '',
-            countryCode: '',
-            timezoneId: '',
-            password: '',
-            password2: '', // dummy 
-            captchaId: '',
-            captchaAnswer: ''
-    });
-    this.objectSubClass = "DmUserSignupData";
-}
-        
-OA.DmUserSignupData.prototype.getDataID = function() {
-    return this.getAttr('username','');
-}
-
-
-OA.DmUserSignupData.className = "DmUserSignupData";
-OA.DmUserSignupData.fullClassName = 'dm.DmUserSignupData';
-
-FM.DmObject.addSubClassType('UserSignupData',OA.DmUserSignupData);
 
 // -- countries ----------------------------------------------------------------
 OA.DmCountry = function() {
@@ -4209,11 +4209,11 @@ OA.DmCountry.prototype.objectSubClass = "";
 // methods
 OA.DmCountry.prototype._init = function(attrs) {
     this._super("_init",attrs, {
-            id: '',
-            code: '',
-            prefix: '',
-            name: '',
-            locale: ''
+        id: '',
+        code: '',
+        prefix: '',
+        name: '',
+        locale: ''
     });
     this.objectSubClass = "DmCountry";
 }
@@ -4241,14 +4241,14 @@ OA.DmTimezone.prototype.objectSubClass = "";
 // methods
 OA.DmTimezone.prototype._init = function(attrs) {            
     this._super("_init",attrs, {
-            id: '',
-            name: '',
-            standardUtcOffset: '',
-            dstOffset: '',
-            dstStartTime: '',
-            dstEndTime: '',
-            countryId: '',
-            title: ''
+        id: '',
+        name: '',
+        standardUtcOffset: '',
+        dstOffset: '',
+        dstStartTime: '',
+        dstEndTime: '',
+        countryId: '',
+        title: ''
     });
     this.objectSubClass = "DmTimezone";
 
@@ -4261,11 +4261,11 @@ OA.DmTimezone.prototype._init = function(attrs) {
     offStr += (offH < 10 && offH > -10 ?
         '0' + '' + Math.abs(offH) :
         '' + Math.abs(offH)) +
-        ':' +
-        (offM < 10 && offM > -10 ?
+    ':' +
+    (offM < 10 && offM > -10 ?
         '0' + '' + offM :
         '' + offM) +
-        ') '
+    ') '
     ;
     
     this.setAttr('title',offStr + this.getAttr('name',''));
@@ -4294,10 +4294,10 @@ OA.DmLanguage.prototype.objectSubClass = "";
 // methods
 OA.DmLanguage.prototype._init = function(attrs) {
     this._super("_init",attrs, {
-            id: '',
-            languageCode: '',
-            languageName: '',
-            languageNameLocal: ''
+        id: '',
+        languageCode: '',
+        languageName: '',
+        languageNameLocal: ''
     });
     this.objectSubClass = "DmLanguage";
 }
@@ -4311,44 +4311,6 @@ OA.DmLanguage.className = "DmLanguage";
 OA.DmLanguage.fullClassName = 'dm.DmLanguage';
 
 FM.DmObject.addSubClassType('Language',OA.DmLanguage);
-
-// -- captcha ------------------------------------------------------------------
-OA.DmCaptcha = function() {
-    this._init.apply(this, arguments); 
-}
-
-FM.extendClass(OA.DmCaptcha, FM.DmObject); 
-
-// properties
-OA.DmCaptcha.prototype.objectSubClass = "";
-
-// methods
-OA.DmCaptcha.prototype._init = function(attrs) {
-    this._super("_init",attrs, {
-        id: '',
-        width: 0,
-        height: 0,
-        imageFormat: 'png',
-        image: ''
-    });
-    this.objectSubClass = "Captcha";
-}
-        
-OA.DmCaptcha.prototype.getDataID = function() {
-    return this.getAttr('id','');
-}
-
-OA.DmCaptcha.prototype.getImageUrl = function() {
-    return "data:image/" + this.getAttr('imageFormat','png') + 
-        ";base64," +  this.getAttr('image','')
-    ;
-}
-
-OA.DmCaptcha.className = "DmCaptcha";
-OA.DmCaptcha.fullClassName = 'dm.DmCaptcha';
-
-FM.DmObject.addSubClassType('Captcha',OA.DmCaptcha);
-
 
 // -- customer profile ---------------------------------------------------------
 OA.DmCustomerProfile = function() {
@@ -4409,8 +4371,8 @@ OA.DmSMSMessage.prototype._init = function(attrs) {
         address: '',
         notifyURL: '',
         callbackData: '',
-        dataCoding: '',
-        clientCorrelator: this.getID()
+        dataCoding: '0',
+        clientCorrelator: ''
     });
     this.objectSubClass = "SMSMessage";
 }
@@ -4422,7 +4384,64 @@ OA.DmSMSMessage.className = "DmSMSMessage";
 OA.DmSMSMessage.fullClassName = 'dm.DmSMSMessage';
 FM.DmObject.addSubClassType('SMSMessage',OA.DmSMSMessage);
 
-// -- SMS message --------------------------------------------------------------
+
+// Delivery info !! dupli (DmDeliveryInfoNotification)
+OA.DmDeliveryInfo = function() {
+    this._init.apply(this, arguments); // new poziva _init()
+}
+FM.extendClass(OA.DmDeliveryInfo, FM.DmObject); // extends FM.Object
+
+// properties
+OA.DmDeliveryInfo.prototype.objectSubClass = "";
+
+// methods
+OA.DmDeliveryInfo.prototype._init = function(attrs) {
+    this._super("_init",attrs, {
+        address: '',
+        deliveryStatus: ''
+    });
+    this.objectSubClass = "DeliveryInfo";
+}
+        
+OA.DmDeliveryInfo.prototype.getDataID = function() {
+    return this.getID();
+}
+
+OA.DmDeliveryInfo.className = "DmDeliveryInfo";
+OA.DmDeliveryInfo.fullClassName = 'dm.DmDeliveryInfo';
+FM.DmObject.addSubClassType('DeliveryInfo',OA.DmDeliveryInfo);
+
+
+// delivery status of SMS message
+OA.DmDeliveryInfoNotification = function() {
+    this._init.apply(this, arguments); // new poziva _init()
+}
+FM.extendClass(OA.DmDeliveryInfoNotification, FM.DmObject); // extends FM.Object
+
+// properties
+OA.DmDeliveryInfoNotification.prototype.objectSubClass = "";
+
+// methods
+OA.DmDeliveryInfoNotification.prototype._init = function(attrs) {
+    this._super("_init",attrs, {
+        deliveryInfo: {
+            address: '',
+            deliveryStatus: ''
+        },
+        callbackData: ''
+    });
+    this.objectSubClass = "DeliveryInfoNotification";
+}
+        
+OA.DmDeliveryInfoNotification.prototype.getDataID = function() {
+    return this.getID();
+}
+
+OA.DmDeliveryInfoNotification.className = "DmDeliveryInfoNotification";
+OA.DmDeliveryInfoNotification.fullClassName = 'dm.DmDeliveryInfoNotification';
+FM.DmObject.addSubClassType('DeliveryInfoNotification',OA.DmDeliveryInfoNotification);
+
+// -- REST resource reference --------------------------------------------------
 OA.DmResourceReference = function() {
     this._init.apply(this, arguments); // new poziva _init()
 }
@@ -4434,7 +4453,8 @@ OA.DmResourceReference.prototype.objectSubClass = "";
 // methods
 OA.DmResourceReference.prototype._init = function(attrs) {
     this._super("_init",attrs, {
-        resourceURL: ''
+        resourceURL: '',
+        resourceObject: null
     });
     this.objectSubClass = "ResourceReference";
 }
@@ -4446,32 +4466,125 @@ OA.DmSMSMessage.className = "DmResourceReference";
 OA.DmSMSMessage.fullClassName = 'dm.DmResourceReference';
 FM.DmObject.addSubClassType('ResourceReference',OA.DmResourceReference);
 
-
-// -- resource reference -------------------------------------------------------
-OA.DmResourceReference = function() {
+// -- inbound message ----------------------------------------------------------
+OA.DmInboundMessage = function() {
     this._init.apply(this, arguments); // new poziva _init()
 }
-FM.extendClass(OA.DmResourceReference, FM.DmObject); // extends FM.Object
+FM.extendClass(OA.DmInboundMessage, FM.DmObject); // extends FM.Object
 
 // properties
-OA.DmResourceReference.prototype.objectSubClass = "";
+OA.DmInboundMessage.prototype.objectSubClass = "";
 
 // methods
-OA.DmResourceReference.prototype._init = function(attrs) {
+OA.DmInboundMessage.prototype._init = function(attrs) {
     this._super("_init",attrs, {
-        resourceURL: ''
+        dateTime: '',
+        destinationAddress: '',
+        messageId: '',
+        message: '',
+        resourceURL: '',
+        senderAddress: ''
     });
-    this.objectSubClass = "ResourceReference";
+    this.objectSubClass = "InboundMessage";
 }
         
-OA.DmResourceReference.prototype.getDataID = function() {
-    return this.getAttr('resourceURL','');
+OA.DmInboundMessage.prototype.getDataID = function() {
+    return this.getID();
 }
-OA.DmResourceReference.className = "DmResourceReference";
-OA.DmResourceReference.fullClassName = 'dm.DmResourceReference';
-FM.DmObject.addSubClassType('ResourceReference',OA.DmResourceReference);
 
-// -- Hlr request status -------------------------------------------------------
+OA.DmInboundMessage.className = "DmInboundMessage";
+OA.DmInboundMessage.fullClassName = 'dm.DmInboundMessage';
+FM.DmObject.addSubClassType('InboundMessage',OA.DmInboundMessage);
+
+// inboud query
+OA.DmInboundQuery = function() {
+    this._init.apply(this, arguments); // new poziva _init()
+}
+FM.extendClass(OA.DmInboundQuery, FM.DmObject); // extends FM.Object
+
+// properties
+OA.DmInboundQuery.prototype.objectSubClass = "";
+
+// methods
+OA.DmInboundQuery.prototype._init = function(attrs) {
+    this._super("_init",attrs, {
+        subscriptionId: '',
+        maxBatchSize: '100'
+    });
+    this.objectSubClass = "InboundQuery";
+}
+        
+OA.DmInboundQuery.prototype.getDataID = function() {
+    return this.getAttr('subscriptionId','');
+}
+
+OA.DmInboundQuery.className = "DmInboundQuery";
+OA.DmInboundQuery.fullClassName = 'dm.DmInboundQuery';
+FM.DmObject.addSubClassType('InboundQuery',OA.DmInboundQuery);
+
+// inbound subscription
+OA.DmMoSubscription = function() {
+    this._init.apply(this, arguments); // new poziva _init()
+}
+FM.extendClass(OA.DmMoSubscription, FM.DmObject); // extends FM.Object
+
+// properties
+OA.DmMoSubscription.prototype.objectSubClass = "";
+
+// methods
+OA.DmMoSubscription.prototype._init = function(attrs) {
+    this._super("_init",attrs, {        
+        subscriptionId: '',
+        notifyURL: '',
+        callbackData: '',
+        criteria:"",
+        destinationAddress: '',
+        notificationFormat: '',
+        title: ''
+    });
+    this.objectSubClass = "MoSubscription";
+    
+    this.setAttr('title',this.getAttr('destinationAddress','') + ', ' + this.getAttr('criteria',''));
+    this.setChanged(false,false);
+}
+        
+OA.DmMoSubscription.prototype.getDataID = function() {
+    return this.getAttr('subscriptionId','');
+}
+OA.DmMoSubscription.className = "DmMoSubscription";
+OA.DmMoSubscription.fullClassName = 'dm.DmMoSubscription';
+FM.DmObject.addSubClassType('MoSubscription',OA.DmMoSubscription);
+
+
+// -- Hlr requests -------------------------------------------------------------
+OA.DmTerminalRoamingQuery = function() {
+    this._init.apply(this, arguments); // new poziva _init()
+}
+FM.extendClass(OA.DmTerminalRoamingQuery, FM.DmObject); // extends FM.Object
+
+// properties
+OA.DmTerminalRoamingQuery.prototype.objectSubClass = "";
+
+// methods
+OA.DmTerminalRoamingQuery.prototype._init = function(attrs) {
+    this._super("_init",attrs, {        
+        address: '',
+        notifyURL:'',
+        includeExtendedData:'',
+        clientCorrelator: '',
+        callbackData: ''
+    });
+    this.objectSubClass = "DmTerminalRoamingQuery";
+}
+        
+OA.DmTerminalRoamingQuery.prototype.getDataID = function() {
+    return this.getAttr('address','');
+}
+OA.DmTerminalRoamingQuery.className = "DmTerminalRoamingQuery";
+OA.DmTerminalRoamingQuery.fullClassName = 'dm.DmTerminalRoamingQuery';
+FM.DmObject.addSubClassType('TerminalRoamingQuery',OA.DmTerminalRoamingQuery);
+
+
 OA.DmTerminalRoamingStatus = function() {
     this._init.apply(this, arguments); // new poziva _init()
 }
@@ -4533,68 +4646,8 @@ OA.DmAccountBalance.className = "DmAccountBalance";
 OA.DmAccountBalance.fullClassName = 'dm.DmAccountBalance';
 FM.DmObject.addSubClassType('AccountBalance',OA.DmAccountBalance);
 
-// -- Inbound message ----------------------------------------------------------
-OA.DmMoSubscription = function() {
-    this._init.apply(this, arguments); // new poziva _init()
-}
-FM.extendClass(OA.DmMoSubscription, FM.DmObject); // extends FM.Object
 
-// properties
-OA.DmMoSubscription.prototype.objectSubClass = "";
-
-// methods
-OA.DmMoSubscription.prototype._init = function(attrs) {
-    this._super("_init",attrs, {
-        subscriptionId: '',
-        notifyURL: '',
-        callbackData: '',
-        criteria:"",
-        destinationAddress: '',
-        notificationFormat: ''        
-    });
-    this.objectSubClass = "MoSubscription";
-}
-        
-OA.DmMoSubscription.prototype.getDataID = function() {
-    return this.getAttr('subscriptionId','');
-}
-OA.DmMoSubscription.className = "DmMoSubscription";
-OA.DmMoSubscription.fullClassName = 'dm.DmMoSubscription';
-FM.DmObject.addSubClassType('MoSubscription',OA.DmMoSubscription);
-
-
-// -- Delivery info notification -----------------------------------------------
-OA.DmDeliveryInfoNotification = function() {
-    this._init.apply(this, arguments); // new poziva _init()
-}
-FM.extendClass(OA.DmDeliveryInfoNotification, FM.DmObject); // extends FM.Object
-
-// properties
-OA.DmDeliveryInfoNotification.prototype.objectSubClass = "";
-
-// methods
-OA.DmDeliveryInfoNotification.prototype._init = function(attrs) {
-//{"deliveryInfoNotification": { "callbackData": "12345", "deliveryInfo": { "address": "tel:+1350000001", "deliveryStatus": "DeliveredToNetwork"}, }}    
-    this._super("_init",attrs, {
-        deliveryInfo: {
-            address: '',
-            deliveryStatus: ''
-        },
-        callbackData: ''
-    });
-    this.objectSubClass = "DeliveryInfoNotification";
-}
-        
-OA.DmDeliveryInfoNotification.prototype.getDataID = function() {
-    return this.getID();
-}
-
-OA.DmDeliveryInfoNotification.className = "DmDeliveryInfoNotification";
-OA.DmDeliveryInfoNotification.fullClassName = 'dm.DmDeliveryInfoNotification';
-FM.DmObject.addSubClassType('DeliveryInfoNotification',OA.DmDeliveryInfoNotification);
-
-
-// -- Inbound sms message ------------------------------------------------------
+// Inbound sms message 
 OA.DmInboundSmsMessage = function() {
     this._init.apply(this, arguments); // new poziva _init()
 }
@@ -4606,12 +4659,12 @@ OA.DmInboundSmsMessage.prototype.objectSubClass = "";
 // methods
 OA.DmInboundSmsMessage.prototype._init = function(attrs) {
     this._super("_init",attrs, {
-    messageId: '',
-    dateTime: '',
-    destinationAddress: '',    
-    message: '',
-    resourceURL: '',
-    senderAddress: ''
+        messageId: '',
+        dateTime: '',
+        destinationAddress: '',    
+        message: '',
+        resourceURL: '',
+        senderAddress: ''
     });
     this.objectSubClass = "InboundSmsMessage";
 }
@@ -4623,33 +4676,6 @@ OA.DmInboundSmsMessage.prototype.getDataID = function() {
 OA.DmInboundSmsMessage.className = "DmInboundSmsMessage";
 OA.DmInboundSmsMessage.fullClassName = 'dm.DmInboundSmsMessage';
 FM.DmObject.addSubClassType('InboundSmsMessage',OA.DmInboundSmsMessage);
-
-// -- Delivery info ------------------------------------------------------------
-OA.DmDeliveryInfo = function() {
-    this._init.apply(this, arguments); // new poziva _init()
-}
-FM.extendClass(OA.DmDeliveryInfo, FM.DmObject); // extends FM.Object
-
-// properties
-OA.DmDeliveryInfo.prototype.objectSubClass = "";
-
-// methods
-OA.DmDeliveryInfo.prototype._init = function(attrs) {
-    this._super("_init",attrs, {
-    address: '',
-    deliveryStatus: ''
-    });
-    this.objectSubClass = "DeliveryInfo";
-}
-        
-OA.DmDeliveryInfo.prototype.getDataID = function() {
-    return this.getID();
-}
-
-OA.DmDeliveryInfo.className = "DmDeliveryInfo";
-OA.DmDeliveryInfo.fullClassName = 'dm.DmDeliveryInfo';
-FM.DmObject.addSubClassType('DeliveryInfo',OA.DmDeliveryInfo);
-
 
 // -- Mo Available Numbers -----------------------------------------------------
 OA.DmMoAvailableNumber = function() {
@@ -4684,7 +4710,32 @@ FM.DmObject.addSubClassType('MoAvailableNumber',OA.DmMoAvailableNumber);
 
 
 
+//-- USSD ----------------------------------------------------------------------
+OA.DmUSSDQuery = function() {
+    this._init.apply(this, arguments); // new poziva _init()
+}
+FM.extendClass(OA.DmUSSDQuery, FM.DmObject); // extends FM.Object
 
+// properties
+OA.DmUSSDQuery.prototype.objectSubClass = "";
+
+// methods
+OA.DmUSSDQuery.prototype._init = function(attrs) {
+    this._super("_init",attrs, {        
+        address: '',
+        message:'',
+        stopSession: 'false',
+        _ussd_function: null
+    });
+    this.objectSubClass = "USSDQuery";
+}
+        
+OA.DmUSSDQuery.prototype.getDataID = function() {
+    return this.getID();
+}
+OA.DmUSSDQuery.className = "DmUSSDQuery";
+OA.DmUSSDQuery.fullClassName = 'dm.DmUSSDQuery';
+FM.DmObject.addSubClassType('USSDQuery',OA.DmUSSDQuery);
 
 
 // file: src/oa/config/oa.ListConfig.js
@@ -4853,67 +4904,7 @@ FM.DmList.addConfiguration('USER_logout', {
     responseParser: OA.responseParser    
 });
 
-// -- captcha ------------------------------------------------------------------
-FM.DmList.addConfiguration('UTIL_captcha', {  
-    resourcePath: '/captcha/generate',
-    url: OA.getApiUrl,
-    method: OA.getApiMethod,
-    resourceMethod: 'POST',
-    contentType: 'application/x-www-form-urlencoded',
-    params: {
-        width: true,
-        height: true,
-        imageFormat: true
-    },
-    headers: OA.getApiHeaders,
-    auth: null,        
-    responseFormat: 'JSON',
-    validResponseCodes: '200',
-    listType: 'single',
-    dataProperty: '',
-    //
-    isErrorResponse: OA.isErrorResponse,
-    errorParser: OA.errorParser,
-    responseParser: OA.responseParser, 
-    // custom
-    _responseClass: OA.DmCaptcha
-});
-
-// -- user signup --------------------------------------------------------------
-FM.DmList.addConfiguration('USER_signup', {
-    resourcePath: '/customerProfile/signup',
-    url: OA.getApiUrl,
-    // ajax config
-    method: OA.getApiMethod,
-    resourceMethod: 'POST',
-    contentType: 'application/x-www-form-urlencoded',
-    params: {
-        username: true,
-        password: true,
-        forename: true,
-        surname: true,
-        email: true,
-        gsm: true,
-        countryCode: true,
-        timezoneId: true,
-        // captcha
-        captchaId: true,
-        captchaAnswer: true        
-    },
-    headers: OA.getApiHeaders,
-    auth: null,
-    responseFormat: 'JSON',
-    validResponseCodes: '201', // created            
-    listType: 'single',
-    dataProperty: 'signup',
-    //
-    isErrorResponse: OA.isErrorResponse,
-    errorParser: OA.errorParser,
-    responseParser: OA.responseParser, 
-    // custom
-    _responseClass: OA.DmUserCredentials    
-});
-
+// == utils ====================================================================
 // -- list of countries --------------------------------------------------------
 FM.DmList.addConfiguration('UTIL_countries', {
     resourcePath: '/countries/[:id]',
@@ -4986,103 +4977,6 @@ FM.DmList.addConfiguration('UTIL_languages', {
     _responseClass: OA.DmLanguage
 });
 
-// -- user verify --------------------------------------------------------------
-FM.DmList.addConfiguration('USER_verify', {
-    resourcePath: '/customerProfile/verify',
-    url: OA.getApiUrl,
-    // ajax config
-    method: OA.getApiMethod,
-    resourceMethod: 'POST',
-    contentType: 'application/x-www-form-urlencoded',
-    params: {
-        verificationCode: true
-    },
-    headers: OA.getApiHeaders,
-    auth: null,
-    responseFormat: 'JSON',
-    validResponseCodes: '200',
-    listType: 'single',
-    dataProperty: '',
-    //
-    isErrorResponse: OA.isErrorResponse,
-    errorParser: OA.errorParser,
-    responseParser: OA.responseParser
-});
-
-// -- user password check ------------------------------------------------------
-FM.DmList.addConfiguration('USER_password_check', {
-    resourcePath: '/customerProfile/password/check',
-    url: OA.getApiUrl,
-    // ajax config
-    method: OA.getApiMethod,
-    resourceMethod: 'GET',
-    contentType: 'application/x-www-form-urlencoded',
-    params: {
-        password: true
-    },
-    headers: OA.getApiHeaders,
-    auth: null,
-    responseFormat: 'JSON',
-    validResponseCodes: '200',
-    listType: 'single'
-});
-
-// -- user password generate ---------------------------------------------------
-FM.DmList.addConfiguration('USER_password_generate', {
-    resourcePath: '/customerProfile/password/generate',
-    url: OA.getApiUrl,
-    // ajax config
-    method: OA.getApiMethod,
-    resourceMethod: 'GET',
-    contentType: 'application/x-www-form-urlencoded',
-    params: {},
-    headers: OA.getApiHeaders,
-    auth: null,
-    responseFormat: 'JSON',
-    validResponseCodes: '201',
-    listType: 'single'
-});
-
-// -- user username check for avialibility -------------------------------------
-FM.DmList.addConfiguration('USER_username_check', {
-    resourcePath: '/customerProfile/username/check',
-    url: OA.getApiUrl,
-    // ajax config
-    method: OA.getApiMethod,
-    resourceMethod: 'GET',
-    contentType: 'application/x-www-form-urlencoded',
-    params: {
-        username: true
-    },
-    headers: OA.getApiHeaders,
-    auth: null,
-    responseFormat: 'JSON',
-    validResponseCodes: '200',
-    listType: 'single'
-});
-
-
-// -- user password change -----------------------------------------------------
-FM.DmList.addConfiguration('USER_password_change', {
-    resourcePath: '/customerProfile/changePassword',
-    url: OA.getApiUrl,
-    // ajax config
-    method: OA.getApiMethod,
-    resourceMethod: 'POST',
-    contentType: 'application/x-www-form-urlencoded',
-    params: {
-        oldPassword: true,
-        newPassword: true,
-        newPassword2: true
-    },
-    headers: OA.getApiHeaders,
-    auth: null,
-    responseFormat: 'JSON',
-    validResponseCodes: '200',
-    listType: 'single'
-});
-
-
 // == profile managment ========================================================
 // -- customer profile ---------------------------------------------------------
 // ovo bi trebalo odraditi poziv sa i bez id-a
@@ -5118,7 +5012,7 @@ FM.DmList.addConfiguration('CUSTOMER_profile_update', {
     
     // ajax config
     method: OA.getApiMethod,
-    resourceMethod: 'POST',
+    resourceMethod: 'PUT',
     contentType: 'application/x-www-form-urlencoded',
     params: {
         id: true,
@@ -5155,7 +5049,31 @@ FM.DmList.addConfiguration('CUSTOMER_profile_update', {
     _responseClass: OA.DmCustomerProfile
 });
 
-// == SMS ======================================================================
+// == MO =======================================================================
+FM.DmList.addConfiguration('SMS_inbound_update', {
+    resourcePath: '/smsmessaging/inbound/subscriptions',
+    url: OA.getApiUrl,
+    
+    // ajax config
+    method: OA.getApiMethod,
+    resourceMethod: 'PUT',
+    contentType: 'application/x-www-form-urlencoded',
+    params: {
+        notifyURL: true,
+        subscriptionId: true
+    },
+    headers: OA.getApiHeaders,
+    auth: null,
+    responseFormat: 'TEXT',
+    validResponseCodes: '201',
+    listType: 'single',
+    dataProperty: '',
+    //
+    isErrorResponse: OA.isErrorResponse,
+    errorParser: OA.errorParser,
+    responseParser: OA.responseParser
+});
+
 FM.DmList.addConfiguration('SMS_inbound_sub_get', {
     resourcePath: '/smsmessaging/inbound/subscriptions',
     url: OA.getApiUrl,
@@ -5212,7 +5130,28 @@ FM.DmList.addConfiguration('SMS_inbound_sub_add', {
     _responseClass: FM.DmGenericValue
 });
 
-
+FM.DmList.addConfiguration('SMS_inbound_sub_delete', {
+    resourcePath: '/smsmessaging/inbound/subscriptions/[:subscriptionId]',
+    url: OA.getApiUrl,
+    
+    // ajax config
+    method: OA.getApiMethod,
+    resourceMethod: 'DELETE',
+    contentType: 'application/x-www-form-urlencoded',
+    params: {
+        subscriptionId: ''
+    },
+    headers: OA.getApiHeaders,
+    auth: null,
+    responseFormat: 'TEXT',
+    validResponseCodes: '204',
+    listType: 'single',
+    dataProperty: '',
+    //
+    isErrorResponse: OA.isErrorResponse,
+    errorParser: OA.errorParser,
+    responseParser: OA.responseParser
+});
 
 FM.DmList.addConfiguration('SMS_inbound_available', {
     resourcePath: '/smsmessaging/inbound/available',
@@ -5261,7 +5200,7 @@ FM.DmList.addConfiguration('SMS_inbound_trial', {
     responseFormat: 'JSON',
     validResponseCodes: '200',
     listType: 'collection',
-    dataProperty: 'numbers',
+    dataProperty: 'availableNumbers',
     //
     isErrorResponse: OA.isErrorResponse,
     errorParser: OA.errorParser,
@@ -5270,7 +5209,34 @@ FM.DmList.addConfiguration('SMS_inbound_trial', {
     _responseClass: OA.DmMoAvailableNumber
 });
 
+FM.DmList.addConfiguration('SMS_inbound_get_messages', {
+    resourcePath: '/smsmessaging/inbound/registrations/[:subscriptionId]/messages',
+    url: OA.getApiUrl,
+    
+    // ajax config
+    method: OA.getApiMethod,
+    resourceMethod: 'GET',
+    contentType: 'application/x-www-form-urlencoded',
+    params: {
+        subscriptionId: true,
+        maxBatchSize: true
+    },
+    headers: OA.getApiHeaders,
+    auth: null,
+    responseFormat: 'JSON',
+    validResponseCodes: '200',
+    listType: 'collection',
+    dataProperty: 'inboundSMSMessageList.inboundSMSMessage',
+    //
+    isErrorResponse: OA.isErrorResponse,
+    errorParser: OA.errorParser,
+    responseParser: OA.responseParser, 
+    
+    // custom
+    _responseClass: OA.DmInboundMessage
+});
 
+// == SMS ======================================================================
 FM.DmList.addConfiguration('SMS_send', {
     resourcePath: '/smsmessaging/outbound/[:senderAddress]/requests',
     url: OA.getApiUrl,
@@ -5301,6 +5267,34 @@ FM.DmList.addConfiguration('SMS_send', {
     responseParser: OA.responseParser, 
     // custom
     _responseClass: OA.DmResourceReference
+});
+
+// Delivery info
+FM.DmList.addConfiguration('DELIVERY_INFOS_get', {
+    resourcePath: '/smsmessaging/outbound/[:senderAddress]/requests/[:requestID]/deliveryInfos',
+    url: OA.getApiUrl,
+    
+    // ajax config
+    method: OA.getApiMethod,
+    resourceMethod: 'GET',
+    contentType: 'application/x-www-form-urlencoded',
+    params: {
+        senderAddress: true,
+        requestID: true
+    },
+    headers: OA.getApiHeaders,
+    auth: null,
+    responseFormat: 'JSON',
+    validResponseCodes: '200',
+    listType: 'collection',
+    dataProperty: 'deliveryInfoList.deliveryInfo',
+    //
+    isErrorResponse: OA.isErrorResponse,
+    errorParser: OA.errorParser,
+    responseParser: OA.responseParser, 
+    
+    // custom
+    _responseClass: OA.DmDeliveryInfo
 });
 
 // == HLR ======================================================================
@@ -5334,6 +5328,60 @@ FM.DmList.addConfiguration('HLR_send', {
     _responseClass: OA.DmTerminalRoamingStatus
 });
 
+    
+// == USSD =====================================================================
+FM.DmList.addConfiguration('USSD_send', {
+    resourcePath: '/ussd/outbound',
+    url: OA.getApiUrl,
+    
+    // ajax config
+    method: OA.getApiMethod,
+    resourceMethod: 'POST',
+    contentType: 'application/x-www-form-urlencoded',
+    params: {
+        address: true,
+        message: true,
+        stopSession: true
+    },
+    headers: OA.getApiHeaders,
+    auth: null,
+    responseFormat: 'JSON',
+    validResponseCodes: '200',
+    listType: 'single',
+    dataProperty: '',
+    //
+    isErrorResponse: OA.isErrorResponse,
+    errorParser: OA.errorParser,
+    responseParser: OA.responseParser, 
+    // custom
+    _responseClass: OA.DmInboundMessage
+});
+
+FM.DmList.addConfiguration('USSD_send_stop', {
+    resourcePath: '/ussd/outbound',
+    url: OA.getApiUrl,
+    
+    // ajax config
+    method: OA.getApiMethod,
+    resourceMethod: 'POST',
+    contentType: 'application/x-www-form-urlencoded',
+    params: {
+        address: true,
+        message: true,
+        stopSession: true
+    },
+    headers: OA.getApiHeaders,
+    auth: null,
+    responseFormat: 'TEXT',
+    validResponseCodes: '200',
+    listType: 'single',
+    dataProperty: '',
+    //
+    isErrorResponse: OA.isErrorResponse,
+    errorParser: OA.errorParser,
+    responseParser: OA.responseParser
+});
+
 // == Account balance ==========================================================
 FM.DmList.addConfiguration('CUSTOMER_balance_get', {
     resourcePath: '/customerProfile/balance',
@@ -5357,34 +5405,6 @@ FM.DmList.addConfiguration('CUSTOMER_balance_get', {
     
     // custom
     _responseClass: OA.DmAccountBalance
-});
-    
-// == Delivery infos ===========================================================
-FM.DmList.addConfiguration('DELIVERY_INFOS_get', {
-    resourcePath: '/smsmessaging/outbound/[:senderAddress]/requests/[:requestID]/deliveryInfos',
-    url: OA.getApiUrl,
-    
-    // ajax config
-    method: OA.getApiMethod,
-    resourceMethod: 'GET',
-    contentType: 'application/x-www-form-urlencoded',
-    params: {
-        senderAddress: true,
-        requestID: true
-    },
-    headers: OA.getApiHeaders,
-    auth: null,
-    responseFormat: 'JSON',
-    validResponseCodes: '200',
-    listType: 'collection',
-    dataProperty: 'deliveryInfoList',
-    //
-    isErrorResponse: OA.isErrorResponse,
-    errorParser: OA.errorParser,
-    responseParser: OA.responseParser, 
-    
-    // custom
-    _responseClass: OA.DmDeliveryInfo
 });
 
 // file: src/oa/config/oa.ClassDecorations.js
@@ -5443,6 +5463,7 @@ OA.AppOneApi.prototype.customersList = null;
 OA.AppOneApi.prototype.userID = '';
 OA.AppOneApi.prototype.appRegistry = null;
 
+
 OA.AppOneApi.prototype._init = function(attrs) {            
     this.userID =  ''; // !test
     this.appRegistry = new FM.UtRegistry();
@@ -5453,6 +5474,7 @@ OA.AppOneApi.prototype._init = function(attrs) {
 
     if(!OA.apiLastErr) {
         OA.apiLastErr = new OA.DmApiError();
+        OA.apiLastErr.addListener(this);
     }    
 
     // imas li token u cookie-u
@@ -5499,103 +5521,32 @@ OA.AppOneApi.prototype.setLastError = function(oErr) {
         return true;
     });
     OA.apiLastErr.setChanged(true,true); // posalji event
-}
-
-// -- util ---------------------------------------------------------------------
-OA.AppOneApi.prototype.getCaptcha = function(width,height,imageFormat,cbfn) {
-    var me = this;
-    var dmlist = new FM.DmList({
-            width: FM.isset(width) && width != null ? width : 200,
-            height: FM.isset(height) && height != null ? width : 75,
-            imageFormat: FM.isset(imageFormat) && imageFormat && imageFormat != ''? imageFormat : 'png'
-        },
-        'UTIL_captcha'
-    );
-    var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
-    var lstnr = {
-        onListStart: function(sender,data) {
-            me.setLastError();
-            return true;
-        },
-        onListEnd: function(sender,data) {
-            var oCaptcha = null;
-            
-            FM.forEach(data.Added,function(id, obj) {
-                oCaptcha = obj;
-                return false;
-            });
-            dmlist.removeListener(lstnr);
-            dmlist.dispose();
-            if(oCaptcha) {
-                callbackFn(true,oCaptcha);
-            } else {
-                callbackFn(false,null);
-            }
-            return true;
-        },
-        onListError: function(sender,data) {
-            dmlist.removeListener(lstnr);
-            dmlist.dispose();
-            me.setLastError(me.getErrorObject(data));
-            callbackFn(false,OA.apiLastErr);
-            return true;
-        }
-    };
-    dmlist.addListener(lstnr);
-    dmlist.getData();
+    return OA.apiLastErr;
 }
 
 // --  auth ------------------------------------------------------------
-/*
-OA.AppOneApi.prototype.signup = function(oSignupData,cbfn) {
-    var me = this;
+OA.AppOneApi.prototype._clearAuthData = function() {
+    var dom = document.domain;
+    if(dom.indexOf('.') > 0) {
+        dom = dom.substr(dom.indexOf('.'));
+    }
+    FM.deleteCookie('IbAuthCookie',dom);
+
+    OA.apiAuth.setAttr("username","");
+    OA.apiAuth.setAttr("password","");
+    OA.apiAuth.setAttr("verified",false);
+    OA.apiAuth.setAttr("ibAuthCookie","");
     
-    var dmlist = new FM.DmList(oSignupData.getAttr(),'USER_signup');
-    var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
-    var lstnr = {
-        onListStart: function(sender,data) {
-            me.setLastError();
-            return true;
-        },
-        onListEnd: function(sender,data) {
-            var oCred = null;
-            FM.forEach(data.Added,function(id, obj) {
-                oCred = obj;
-                return false;
-            });
-            dmlist.removeListener(lstnr);
-            dmlist.dispose();
-            oCred.forEachAttr(function(name,value) {
-                OA.apiAuth.setAttr(name,value);
-                return true;
-            });
-            OA.apiAuth.setAttr('username',oSignupData.getAttr('username',''));
-            me.saveCredentials();
-            OA.apiAuth.setChanged(true,true); // posalji event
-            callbackFn(true,OA.apiAuth);
-            
-            // posalji auth changed
-            me.fireEvent('onAuthChanged',OA.apiAuth);
-            return true;
-        },
-        onListError: function(sender,data) {
-            dmlist.removeListener(lstnr);
-            dmlist.dispose();            
-            me.setLastError(me.getErrorObject(data));            
-            me.fireEvent('onAuthError',data);
-            callbackFn(false,OA.apiLastErr);
-            return true;
-        }
-    };                
-    dmlist.addListener(lstnr);
-    dmlist.getData();            
 }
-*/
 
 OA.AppOneApi.prototype.saveCredentials = function() {
     if(OA.apiAuth)  {        
-        FM.saveCookie('IbAuthCookie', OA.apiAuth.getAttr('ibAuthCookie',''), -1,".parseco.com");
-        FM.saveCookie('IbAuthCookieInfo', OA.apiAuth.getAttr(), -1,".parseco.com");
+        var dom = document.domain;
+        if(dom.indexOf('.') > 0) {
+            dom = dom.substr(dom.indexOf('.'));
+        }
+        FM.saveCookie('IbAuthCookie', OA.apiAuth.getAttr('ibAuthCookie',''), -1,dom);
+        FM.saveCookie('IbAuthCookieInfo', OA.apiAuth.getAttr(), -1,dom);
     }
 }
 
@@ -5634,7 +5585,7 @@ OA.AppOneApi.prototype.login = function(username, password,cbfn) {
         password: password
     },
     'USER_login'
-);
+    );
     var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
     var lstnr = {
         onListStart: function(sender,data) {
@@ -5674,44 +5625,42 @@ OA.AppOneApi.prototype.login = function(username, password,cbfn) {
     dmlist.getData();
 }
 
+
 OA.AppOneApi.prototype.logout = function(cbfn) {
     var me = this;
     var dmlist = new FM.DmList({},'USER_logout');
         
     var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
+    var dom = document.domain;
+    if(dom.indexOf('.') > 0) {
+        dom = dom.substr(dom.indexOf('.'));
+    }
+    
     var lstnr = {
         onListStart: function(sender,data) {
             me.setLastError();
             return true;
         },
+        
         onListEnd: function(sender,data) {
-            FM.deleteCookie('IbAuthCookie');
-            
-            OA.apiAuth.setAttr("username","");
-            OA.apiAuth.setAttr("password","");
-            OA.apiAuth.setAttr("verified",false);
-            OA.apiAuth.setAttr("ibAuthCookie","");
+            me._clearAuthData();
+            dmlist.removeListener(lstnr);
+            dmlist.dispose();
             OA.apiAuth.setChanged(true,true);
             callbackFn(true,OA.apiAuth);
             me.fireEvent('onAuthChanged',OA.apiAuth);
             return true;
         },
         onListError: function(sender,data) {
+            me._clearAuthData();
             dmlist.removeListener(lstnr);
             dmlist.dispose();
-            
-            // svejedno je, i tako nemamo session
-            FM.deleteCookie('IbAuthCookie');
-            
-            OA.apiAuth.setAttr("username","");
-            OA.apiAuth.setAttr("password","");
-            OA.apiAuth.setAttr("verified",false);
-            OA.apiAuth.setAttr("ibAuthCookie","");
             OA.apiAuth.setChanged(true,true);
             callbackFn(true,OA.apiAuth);
             me.fireEvent('onAuthChanged',OA.apiAuth);
             return true;
         }
+      
     };
     dmlist.addListener(lstnr);
     dmlist.getData();            
@@ -5719,70 +5668,6 @@ OA.AppOneApi.prototype.logout = function(cbfn) {
     return true;
 }
 
-OA.AppOneApi.prototype.verifyAccount = function(vercode,cbfn) {
-    if(FM.isObject(vercode) && FM.isset(vercode.getSubClassName) && vercode.getSubClassName() == 'GenericValue') {
-        var o = vercode;
-        vercode = o.getAttr('value','');
-    }
-    
-    var me = this;
-    var dmlist = new FM.DmList({
-            verificationCode: vercode
-        },'USER_verify'
-    );
-        
-    var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
-    var lstnr = {
-        onListStart: function(sender,data) {
-            me.setLastError();
-            return true;
-        },
-        onListEnd: function(sender,data) {
-            var username = OA.apiAuth.getAttr('username','');
-            var oCred = null;
-            FM.forEach(data.Added,function(id, obj) {
-                oCred = obj;
-                return false;
-            });
-            dmlist.removeListener(lstnr);
-            dmlist.dispose();
-            OA.apiAuth.setAttr('verified',oCred.getAttr('value.verify',false));
-            me.saveCredentials();
-            OA.apiAuth.setChanged(true,true); // posalji event
-            callbackFn(true,OA.apiAuth);
-            
-            // posalji auth changed
-            me.fireEvent('onAuthChanged',OA.apiAuth);
-            return true;
-        },
-        onListError: function(sender,data) {
-            dmlist.removeListener(lstnr);
-            dmlist.dispose();            
-            me.setLastError(me.getErrorObject(data));
-            callbackFn(false,OA.apiLastErr);
-            return true;
-        }
-    };
-    dmlist.addListener(lstnr);
-    dmlist.getData();            
-}
-
-OA.AppOneApi.prototype.checkPasswordStrength = function(password,cbFn) {
-    
-}
-
-OA.AppOneApi.prototype.generatePassword = function(cbFn) {
-    
-}
-
-OA.AppOneApi.prototype.changePassword = function(oldPassword,newPassword,newPassword2,cbFn) {
-    
-}
-
-
-OA.AppOneApi.prototype.checkUsernameAvialiability = function(username, cbFn) {
-    
-}
 
 // country cache
 OA.AppOneApi.prototype.getCountries = function(code,cbfn) {        
@@ -5791,7 +5676,7 @@ OA.AppOneApi.prototype.getCountries = function(code,cbfn) {
     var me = this;
     var dmlist = new FM.DmList({
         countryCode: code 
-        },'UTIL_countries'
+    },'UTIL_countries'
     );
     
     var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
@@ -5825,7 +5710,7 @@ OA.AppOneApi.prototype.getLanguages = function(code,cbfn) {
     var me = this;
     var dmlist = new FM.DmList({
         countryCode: code 
-        },'UTIL_languages'
+    },'UTIL_languages'
     );
     
     var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
@@ -5863,6 +5748,9 @@ OA.AppOneApi.prototype.sendSMS = function(oSmsMessage,cbfn) {
     
     var me = this;
     var dmlist = new FM.DmList(oSmsMessage.getAttr(),'SMS_send');
+    if(oSmsMessage.getAttr('clientCorrelator','') == '') {
+        dmlist.setAttr('clientCorrelator',FM.generateNewID());
+    }
     
     var lstnr = {
         onListStart: function(sender,data) {
@@ -5873,6 +5761,8 @@ OA.AppOneApi.prototype.sendSMS = function(oSmsMessage,cbfn) {
             var oRef = null;
             FM.forEach(data.Added,function(id, obj) {
                 oRef = obj;
+                oRef.setAttr('resourceObject',oSmsMessage.getAttr());
+                oRef.setAttr('resourceObject.clientCorrelator',dmlist.getAttr('clientCorrelator',''));
                 return false;
             });
             dmlist.removeListener(lstnr);
@@ -5894,16 +5784,59 @@ OA.AppOneApi.prototype.sendSMS = function(oSmsMessage,cbfn) {
     dmlist.getData();            
 }
 
-OA.AppOneApi.prototype.retrieveInboundMessages = function(
-/*
+/* WORK IN PROGRESS */
+OA.AppOneApi.prototype.deleteInboundSubscription = function(oSub,cbfn) {
+    // 
+    var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
+    
+    var me = this;
+    var params = {
+        subscriptionId: oSub.getAttr('subscriptionId','')
+    };
+    
+   
+    var dmlist = new FM.DmList(params,'SMS_inbound_sub_delete');    
+    var lstnr = {
+        onListStart: function(sender,data) {
+            me.setLastError();
+            return true;
+        },
+        onListEnd: function(sender,data) {
+            var oNums = [];
+            FM.forEach(data.Added,function(id, obj) {
+                oNums.push(obj);
+                return true;
+            });
+            dmlist.removeListener(lstnr);
+            dmlist.dispose();
+            callbackFn(true,oNums);
+            return dmlist;
+        },
+        onListError: function(sender,data) {
+            dmlist.removeListener(lstnr);
+            dmlist.dispose();
+            
+            dmlist.removeListener(lstnr);
+            me.setLastError(me.getErrorObject(data));
+            callbackFn(false,OA.apiLastErr);
+            return true;
+        }
+    };
+    dmlist.addListener(lstnr);
+    dmlist.getData();                
+}
+
+
+OA.AppOneApi.prototype.retrieveInboundSubscriptions = function(
+    /*
     destinationAddress,notifyURL,
     criteria,notificationFormat,
     callbackData,
     clientCorrelator,
 */
-        page,pageSize,
-        cbfn
-) {
+    page,pageSize,
+    cbfn
+    ) {
     // 
     var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
     
@@ -5961,7 +5894,7 @@ OA.AppOneApi.prototype.subscribeToInboundMessagesNotifications = function(
     callbackData,
     clientCorrelator,
     cbfn
-) {
+    ) {
     // 
     var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
     
@@ -6002,111 +5935,11 @@ OA.AppOneApi.prototype.subscribeToInboundMessagesNotifications = function(
     dmlist.getData();            
 }
         
-        
-OA.AppOneApi.prototype.getAvailableNumbersToBuy = function(
-    countryId,dateFrom,dateTo,criteria,free,
-    page,pageSize,
-    cbfn
-) {
-    // 
-    var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
-    
-    var me = this;
-    var params = {
-        countryId: countryId
-    };
-    
-    if(FM.isset(page) && page) params['page'] = page;
-    if(FM.isset(pageSize) && pageSize) params['pageSize'] = pageSize;
-    
-    if(FM.isset(dateFrom) && dateFrom) params['dateFrom'] = dateFrom;
-    if(FM.isset(dateTo) && dateTo) params['dateTo'] = dateTo;
-    if(FM.isset(criteria) && criteria) params['criteria'] = criteria;
-    if(FM.isset(free) && free) params['free'] = free;
-   
-    var dmlist = new FM.DmList(params,'SMS_inbound_available');
-    
-    var lstnr = {
-        onListStart: function(sender,data) {
-            me.setLastError();
-            return true;
-        },
-        onListEnd: function(sender,data) {            
-            var oNums = [];
-            FM.forEach(data.Added,function(id, obj) {
-                oNums.push(obj);
-                return true;
-            });
-            dmlist.removeListener(lstnr);
-            dmlist.dispose();
-            callbackFn(true,oNums);
-            return dmlist;
-        },
-        onListError: function(sender,data) {
-            dmlist.removeListener(lstnr);
-            dmlist.dispose();
-            
-            dmlist.removeListener(lstnr);
-            me.setLastError(me.getErrorObject(data));
-            callbackFn(false,OA.apiLastErr);
-            return true;
-        }
-    };
-    dmlist.addListener(lstnr);
-    dmlist.getData();            
-}
-
-
-OA.AppOneApi.prototype.getFreeTrialNumber = function(
-    notifyURL,
-    cbfn
-) {
-    // 
-    var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
-    
-    var me = this;
-    var params = {
-        notifyURL: notifyURL
-    };
-    
-   
-    var dmlist = new FM.DmList(params,'SMS_inbound_trial');
-    
-    var lstnr = {
-        onListStart: function(sender,data) {
-            me.setLastError();
-            return true;
-        },
-        onListEnd: function(sender,data) {            
-            var oNums = [];
-            FM.forEach(data.Added,function(id, obj) {
-                oNums.push(obj);
-                return true;
-            });
-            dmlist.removeListener(lstnr);
-            dmlist.dispose();
-            callbackFn(true,oNums);
-            return dmlist;
-        },
-        onListError: function(sender,data) {
-            dmlist.removeListener(lstnr);
-            dmlist.dispose();
-            
-            dmlist.removeListener(lstnr);
-            me.setLastError(me.getErrorObject(data));
-            callbackFn(false,OA.apiLastErr);
-            return true;
-        }
-    };
-    dmlist.addListener(lstnr);
-    dmlist.getData();            
-}
-
 OA.AppOneApi.prototype.retrieveRoamingStatus = function(
     sAddress,sNotifyURL,
     bExternalData, sClientCorrelator, sCallbackData, 
     cbfn
-) {
+    ) {
     // 
     var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
     if(!FM.isset(sAddress) || sAddress == '') {
@@ -6147,6 +5980,11 @@ OA.AppOneApi.prototype.retrieveRoamingStatus = function(
             });
             dmlist.removeListener(lstnr);
             dmlist.dispose();
+            if(!oRef.isAttr('currentRoaming'))  { // not found
+                me.setLastError(new FM.DmGenericError({messageId: 'CLI0001', text: 'Unable to query roaming status'}));
+                callbackFn(false,OA.apiLastErr);
+                return true;
+            }
             callbackFn(true,oRef);
             return dmlist;
         },
@@ -6164,6 +6002,39 @@ OA.AppOneApi.prototype.retrieveRoamingStatus = function(
     dmlist.getData();            
 }
 
+OA.AppOneApi.prototype.updateInboundSubscription = function(oSub,cbfn) {
+    // 
+    var me = this;
+    var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
+    
+    var dmlist = new FM.DmList({
+        notifyURL: oSub.getAttr('notifyURL',''),
+        subscriptionId: oSub.getAttr('subscriptionId','')
+        },'SMS_inbound_update');    
+    var lstnr = {
+        onListStart: function(sender,data) {
+            me.setLastError();
+            return true;
+        },
+        onListEnd: function(sender,data) {
+            dmlist.removeListener(lstnr);
+            dmlist.dispose();
+            callbackFn(true,null);
+            return dmlist;
+        },
+        onListError: function(sender,data) {
+            dmlist.removeListener(lstnr);
+            dmlist.dispose();
+            
+            dmlist.removeListener(lstnr);
+            me.setLastError(me.getErrorObject(data));
+            callbackFn(false,OA.apiLastErr);
+            return true;
+        }
+    };
+    dmlist.addListener(lstnr);
+    dmlist.getData();            
+}
 
 
 
@@ -6193,7 +6064,9 @@ OA.AppOneApi.prototype.getCustomerProfile = function(id,callbackFn) {
     
     // ako je new
     if(id == 'new') {
-        oProfile = new OA.DmCustomerProfile({id: 'new'});
+        oProfile = new OA.DmCustomerProfile({
+            id: 'new'
+        });
         if(FM.isset(callbackFn)) {
             callbackFn(true,oProfile);
         }
@@ -6213,7 +6086,7 @@ OA.AppOneApi.prototype.getCustomerProfile = function(id,callbackFn) {
         id = '';
     }
     
-    oProfile = this.customersList.get(id);
+    oProfile = this.customersList.get(id == '' ? OA.apiAuth.getAttr('id','') : id);
 
     // ako nije fetchan a callback nije poslan vrati null
     // samo u slucaju kad je auth prosao
@@ -6228,8 +6101,8 @@ OA.AppOneApi.prototype.getCustomerProfile = function(id,callbackFn) {
                 callbackFn(ok,cp);
             }
         });
-    } else {
-        OA.apiAuth.setAttr('username',cp.getAttr('username',''))
+    } else if(oProfile && oProfile.getAttr('id','y') == OA.apiAuth.getAttr('id','x')) {
+        OA.apiAuth.setAttr('username',oProfile.getAttr('username',''))
         this.saveCredentials();        
     }
 
@@ -6286,8 +6159,8 @@ OA.AppOneApi.prototype.fetchCustomerProfile = function(id,callbackFn) {
 OA.AppOneApi.prototype.updateCustomerProfile = function(oCustomer,callbackFn) {
     callbackFn = FM.isset(callbackFn) && callbackFn && FM.isFunction(callbackFn) ? callbackFn : function() {};
     oCustomer = 
-        !FM.isset(oCustomer) || !oCustomer || oCustomer == '' || oCustomer == 'me'?
-        this.getCustomerProfile() :  oCustomer
+    !FM.isset(oCustomer) || !oCustomer || oCustomer == '' || oCustomer == 'me'?
+    this.getCustomerProfile() :  oCustomer
     ;
 
     if(!oCustomer || oCustomer.getSubClassName() != 'CustomerProfile') { 
@@ -6330,9 +6203,9 @@ OA.AppOneApi.prototype.updateCustomerProfile = function(oCustomer,callbackFn) {
 OA.AppOneApi.prototype.createCustomerProfile = function(oCustomer,callbackFn) {            
     callbackFn = FM.isset(callbackFn) && callbackFn && FM.isFunction(callbackFn) ? callbackFn : function() {};
     oCustomer = 
-        FM.isset(oCustomer) && oCustomer && oCustomer.getSubClassName() == 'CustomerProfile' ?
-        oCustomer : 
-        null
+    FM.isset(oCustomer) && oCustomer && oCustomer.getSubClassName() == 'CustomerProfile' ?
+    oCustomer : 
+    null
     ;
 
     if(!oCustomer) { 
@@ -6446,7 +6319,7 @@ OA.AppOneApi.prototype.getAccountBalance = function(callbackFn) {
 
     var me = this;
     var dmlist = new FM.DmList({
-    },'CUSTOMER_balance_get');
+        },'CUSTOMER_balance_get');
     var lstnr = {
         onListStart: function(sender,data) {
             me.setLastError();
@@ -6532,7 +6405,7 @@ OA.AppOneApi.prototype.onUpdateCustomerProfile = function(sender,evdata) {
         oCustomer.getAttr('id','') != "new" ? 
         this.updateCustomerProfile(oCustomer,FM.getAttr(evdata,'callback',null)) : 
         this.createCustomerProfile(oCustomer,FM.getAttr(evdata,'callback',null))
-    );
+        );
 }
 
 OA.AppOneApi.prototype.onCreateCustomerProfile = function(sender,evdata) {
@@ -6541,11 +6414,17 @@ OA.AppOneApi.prototype.onCreateCustomerProfile = function(sender,evdata) {
     return this.createCustomerProfile(oCustomer);            
 }
 
+OA.AppOneApi.prototype.onChange = function(oObj) {   
+    if(oObj == OA.apiLastErr && OA.apiLastErr.getAttr("messageId") == 'SVC0003') {
+        this._clearAuthData();
+        //this.setLastError();
+        OA.apiAuth.setChanged(true,true);
+        this.fireEvent('onAuthChanged',OA.apiAuth);
+    }
+}   
 
 OA.AppOneApi.className = "AppOneApi";
 OA.AppOneApi.fullClassName = 'oa.AppOneApi';
-    
-    
     
 
 // file: src/oa/api.js
@@ -6707,7 +6586,7 @@ if(typeof(oneapi) == 'undefined') {
         return oneapi.session.app.sendSMS(address,clientCorrelatorOrResourceReference,callbackFn);
     }
 
-    oneapi.retrieveInboundMessages = function(
+    oneapi.retrieveInboundSubscriptions = function(
     /*
         destinationAddress,notifyURL,
         criteria,notificationFormat,
@@ -6717,7 +6596,7 @@ if(typeof(oneapi) == 'undefined') {
         page,pageSize,
         callbackFn
     ) {
-        return oneapi.session.app.retrieveInboundMessages(
+        return oneapi.session.app.retrieveInboundSubscriptions(
         /*
             destinationAddress,notifyURL,
             criteria,notificationFormat,
@@ -6773,3 +6652,4 @@ if(typeof(oneapi) == 'undefined') {
     }
 }
 
+}

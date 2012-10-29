@@ -10,6 +10,7 @@ OA.AppOneApi.prototype.customersList = null;
 OA.AppOneApi.prototype.userID = '';
 OA.AppOneApi.prototype.appRegistry = null;
 
+
 OA.AppOneApi.prototype._init = function(attrs) {            
     this.userID =  ''; // !test
     this.appRegistry = new FM.UtRegistry();
@@ -20,6 +21,7 @@ OA.AppOneApi.prototype._init = function(attrs) {
 
     if(!OA.apiLastErr) {
         OA.apiLastErr = new OA.DmApiError();
+        OA.apiLastErr.addListener(this);
     }    
 
     // imas li token u cookie-u
@@ -66,103 +68,32 @@ OA.AppOneApi.prototype.setLastError = function(oErr) {
         return true;
     });
     OA.apiLastErr.setChanged(true,true); // posalji event
-}
-
-// -- util ---------------------------------------------------------------------
-OA.AppOneApi.prototype.getCaptcha = function(width,height,imageFormat,cbfn) {
-    var me = this;
-    var dmlist = new FM.DmList({
-            width: FM.isset(width) && width != null ? width : 200,
-            height: FM.isset(height) && height != null ? width : 75,
-            imageFormat: FM.isset(imageFormat) && imageFormat && imageFormat != ''? imageFormat : 'png'
-        },
-        'UTIL_captcha'
-    );
-    var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
-    var lstnr = {
-        onListStart: function(sender,data) {
-            me.setLastError();
-            return true;
-        },
-        onListEnd: function(sender,data) {
-            var oCaptcha = null;
-            
-            FM.forEach(data.Added,function(id, obj) {
-                oCaptcha = obj;
-                return false;
-            });
-            dmlist.removeListener(lstnr);
-            dmlist.dispose();
-            if(oCaptcha) {
-                callbackFn(true,oCaptcha);
-            } else {
-                callbackFn(false,null);
-            }
-            return true;
-        },
-        onListError: function(sender,data) {
-            dmlist.removeListener(lstnr);
-            dmlist.dispose();
-            me.setLastError(me.getErrorObject(data));
-            callbackFn(false,OA.apiLastErr);
-            return true;
-        }
-    };
-    dmlist.addListener(lstnr);
-    dmlist.getData();
+    return OA.apiLastErr;
 }
 
 // --  auth ------------------------------------------------------------
-/*
-OA.AppOneApi.prototype.signup = function(oSignupData,cbfn) {
-    var me = this;
+OA.AppOneApi.prototype._clearAuthData = function() {
+    var dom = document.domain;
+    if(dom.indexOf('.') > 0) {
+        dom = dom.substr(dom.indexOf('.'));
+    }
+    FM.deleteCookie('IbAuthCookie',dom);
+
+    OA.apiAuth.setAttr("username","");
+    OA.apiAuth.setAttr("password","");
+    OA.apiAuth.setAttr("verified",false);
+    OA.apiAuth.setAttr("ibAuthCookie","");
     
-    var dmlist = new FM.DmList(oSignupData.getAttr(),'USER_signup');
-    var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
-    var lstnr = {
-        onListStart: function(sender,data) {
-            me.setLastError();
-            return true;
-        },
-        onListEnd: function(sender,data) {
-            var oCred = null;
-            FM.forEach(data.Added,function(id, obj) {
-                oCred = obj;
-                return false;
-            });
-            dmlist.removeListener(lstnr);
-            dmlist.dispose();
-            oCred.forEachAttr(function(name,value) {
-                OA.apiAuth.setAttr(name,value);
-                return true;
-            });
-            OA.apiAuth.setAttr('username',oSignupData.getAttr('username',''));
-            me.saveCredentials();
-            OA.apiAuth.setChanged(true,true); // posalji event
-            callbackFn(true,OA.apiAuth);
-            
-            // posalji auth changed
-            me.fireEvent('onAuthChanged',OA.apiAuth);
-            return true;
-        },
-        onListError: function(sender,data) {
-            dmlist.removeListener(lstnr);
-            dmlist.dispose();            
-            me.setLastError(me.getErrorObject(data));            
-            me.fireEvent('onAuthError',data);
-            callbackFn(false,OA.apiLastErr);
-            return true;
-        }
-    };                
-    dmlist.addListener(lstnr);
-    dmlist.getData();            
 }
-*/
 
 OA.AppOneApi.prototype.saveCredentials = function() {
     if(OA.apiAuth)  {        
-        FM.saveCookie('IbAuthCookie', OA.apiAuth.getAttr('ibAuthCookie',''), -1,".parseco.com");
-        FM.saveCookie('IbAuthCookieInfo', OA.apiAuth.getAttr(), -1,".parseco.com");
+        var dom = document.domain;
+        if(dom.indexOf('.') > 0) {
+            dom = dom.substr(dom.indexOf('.'));
+        }
+        FM.saveCookie('IbAuthCookie', OA.apiAuth.getAttr('ibAuthCookie',''), -1,dom);
+        FM.saveCookie('IbAuthCookieInfo', OA.apiAuth.getAttr(), -1,dom);
     }
 }
 
@@ -201,7 +132,7 @@ OA.AppOneApi.prototype.login = function(username, password,cbfn) {
         password: password
     },
     'USER_login'
-);
+    );
     var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
     var lstnr = {
         onListStart: function(sender,data) {
@@ -241,44 +172,42 @@ OA.AppOneApi.prototype.login = function(username, password,cbfn) {
     dmlist.getData();
 }
 
+
 OA.AppOneApi.prototype.logout = function(cbfn) {
     var me = this;
     var dmlist = new FM.DmList({},'USER_logout');
         
     var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
+    var dom = document.domain;
+    if(dom.indexOf('.') > 0) {
+        dom = dom.substr(dom.indexOf('.'));
+    }
+    
     var lstnr = {
         onListStart: function(sender,data) {
             me.setLastError();
             return true;
         },
+        
         onListEnd: function(sender,data) {
-            FM.deleteCookie('IbAuthCookie');
-            
-            OA.apiAuth.setAttr("username","");
-            OA.apiAuth.setAttr("password","");
-            OA.apiAuth.setAttr("verified",false);
-            OA.apiAuth.setAttr("ibAuthCookie","");
+            me._clearAuthData();
+            dmlist.removeListener(lstnr);
+            dmlist.dispose();
             OA.apiAuth.setChanged(true,true);
             callbackFn(true,OA.apiAuth);
             me.fireEvent('onAuthChanged',OA.apiAuth);
             return true;
         },
         onListError: function(sender,data) {
+            me._clearAuthData();
             dmlist.removeListener(lstnr);
             dmlist.dispose();
-            
-            // svejedno je, i tako nemamo session
-            FM.deleteCookie('IbAuthCookie');
-            
-            OA.apiAuth.setAttr("username","");
-            OA.apiAuth.setAttr("password","");
-            OA.apiAuth.setAttr("verified",false);
-            OA.apiAuth.setAttr("ibAuthCookie","");
             OA.apiAuth.setChanged(true,true);
             callbackFn(true,OA.apiAuth);
             me.fireEvent('onAuthChanged',OA.apiAuth);
             return true;
         }
+      
     };
     dmlist.addListener(lstnr);
     dmlist.getData();            
@@ -286,70 +215,6 @@ OA.AppOneApi.prototype.logout = function(cbfn) {
     return true;
 }
 
-OA.AppOneApi.prototype.verifyAccount = function(vercode,cbfn) {
-    if(FM.isObject(vercode) && FM.isset(vercode.getSubClassName) && vercode.getSubClassName() == 'GenericValue') {
-        var o = vercode;
-        vercode = o.getAttr('value','');
-    }
-    
-    var me = this;
-    var dmlist = new FM.DmList({
-            verificationCode: vercode
-        },'USER_verify'
-    );
-        
-    var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
-    var lstnr = {
-        onListStart: function(sender,data) {
-            me.setLastError();
-            return true;
-        },
-        onListEnd: function(sender,data) {
-            var username = OA.apiAuth.getAttr('username','');
-            var oCred = null;
-            FM.forEach(data.Added,function(id, obj) {
-                oCred = obj;
-                return false;
-            });
-            dmlist.removeListener(lstnr);
-            dmlist.dispose();
-            OA.apiAuth.setAttr('verified',oCred.getAttr('value.verify',false));
-            me.saveCredentials();
-            OA.apiAuth.setChanged(true,true); // posalji event
-            callbackFn(true,OA.apiAuth);
-            
-            // posalji auth changed
-            me.fireEvent('onAuthChanged',OA.apiAuth);
-            return true;
-        },
-        onListError: function(sender,data) {
-            dmlist.removeListener(lstnr);
-            dmlist.dispose();            
-            me.setLastError(me.getErrorObject(data));
-            callbackFn(false,OA.apiLastErr);
-            return true;
-        }
-    };
-    dmlist.addListener(lstnr);
-    dmlist.getData();            
-}
-
-OA.AppOneApi.prototype.checkPasswordStrength = function(password,cbFn) {
-    
-}
-
-OA.AppOneApi.prototype.generatePassword = function(cbFn) {
-    
-}
-
-OA.AppOneApi.prototype.changePassword = function(oldPassword,newPassword,newPassword2,cbFn) {
-    
-}
-
-
-OA.AppOneApi.prototype.checkUsernameAvialiability = function(username, cbFn) {
-    
-}
 
 // country cache
 OA.AppOneApi.prototype.getCountries = function(code,cbfn) {        
@@ -358,7 +223,7 @@ OA.AppOneApi.prototype.getCountries = function(code,cbfn) {
     var me = this;
     var dmlist = new FM.DmList({
         countryCode: code 
-        },'UTIL_countries'
+    },'UTIL_countries'
     );
     
     var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
@@ -392,7 +257,7 @@ OA.AppOneApi.prototype.getLanguages = function(code,cbfn) {
     var me = this;
     var dmlist = new FM.DmList({
         countryCode: code 
-        },'UTIL_languages'
+    },'UTIL_languages'
     );
     
     var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
@@ -430,6 +295,9 @@ OA.AppOneApi.prototype.sendSMS = function(oSmsMessage,cbfn) {
     
     var me = this;
     var dmlist = new FM.DmList(oSmsMessage.getAttr(),'SMS_send');
+    if(oSmsMessage.getAttr('clientCorrelator','') == '') {
+        dmlist.setAttr('clientCorrelator',FM.generateNewID());
+    }
     
     var lstnr = {
         onListStart: function(sender,data) {
@@ -440,6 +308,8 @@ OA.AppOneApi.prototype.sendSMS = function(oSmsMessage,cbfn) {
             var oRef = null;
             FM.forEach(data.Added,function(id, obj) {
                 oRef = obj;
+                oRef.setAttr('resourceObject',oSmsMessage.getAttr());
+                oRef.setAttr('resourceObject.clientCorrelator',dmlist.getAttr('clientCorrelator',''));
                 return false;
             });
             dmlist.removeListener(lstnr);
@@ -461,16 +331,59 @@ OA.AppOneApi.prototype.sendSMS = function(oSmsMessage,cbfn) {
     dmlist.getData();            
 }
 
-OA.AppOneApi.prototype.retrieveInboundMessages = function(
-/*
+/* WORK IN PROGRESS */
+OA.AppOneApi.prototype.deleteInboundSubscription = function(oSub,cbfn) {
+    // 
+    var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
+    
+    var me = this;
+    var params = {
+        subscriptionId: oSub.getAttr('subscriptionId','')
+    };
+    
+   
+    var dmlist = new FM.DmList(params,'SMS_inbound_sub_delete');    
+    var lstnr = {
+        onListStart: function(sender,data) {
+            me.setLastError();
+            return true;
+        },
+        onListEnd: function(sender,data) {
+            var oNums = [];
+            FM.forEach(data.Added,function(id, obj) {
+                oNums.push(obj);
+                return true;
+            });
+            dmlist.removeListener(lstnr);
+            dmlist.dispose();
+            callbackFn(true,oNums);
+            return dmlist;
+        },
+        onListError: function(sender,data) {
+            dmlist.removeListener(lstnr);
+            dmlist.dispose();
+            
+            dmlist.removeListener(lstnr);
+            me.setLastError(me.getErrorObject(data));
+            callbackFn(false,OA.apiLastErr);
+            return true;
+        }
+    };
+    dmlist.addListener(lstnr);
+    dmlist.getData();                
+}
+
+
+OA.AppOneApi.prototype.retrieveInboundSubscriptions = function(
+    /*
     destinationAddress,notifyURL,
     criteria,notificationFormat,
     callbackData,
     clientCorrelator,
 */
-        page,pageSize,
-        cbfn
-) {
+    page,pageSize,
+    cbfn
+    ) {
     // 
     var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
     
@@ -528,7 +441,7 @@ OA.AppOneApi.prototype.subscribeToInboundMessagesNotifications = function(
     callbackData,
     clientCorrelator,
     cbfn
-) {
+    ) {
     // 
     var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
     
@@ -569,111 +482,11 @@ OA.AppOneApi.prototype.subscribeToInboundMessagesNotifications = function(
     dmlist.getData();            
 }
         
-        
-OA.AppOneApi.prototype.getAvailableNumbersToBuy = function(
-    countryId,dateFrom,dateTo,criteria,free,
-    page,pageSize,
-    cbfn
-) {
-    // 
-    var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
-    
-    var me = this;
-    var params = {
-        countryId: countryId
-    };
-    
-    if(FM.isset(page) && page) params['page'] = page;
-    if(FM.isset(pageSize) && pageSize) params['pageSize'] = pageSize;
-    
-    if(FM.isset(dateFrom) && dateFrom) params['dateFrom'] = dateFrom;
-    if(FM.isset(dateTo) && dateTo) params['dateTo'] = dateTo;
-    if(FM.isset(criteria) && criteria) params['criteria'] = criteria;
-    if(FM.isset(free) && free) params['free'] = free;
-   
-    var dmlist = new FM.DmList(params,'SMS_inbound_available');
-    
-    var lstnr = {
-        onListStart: function(sender,data) {
-            me.setLastError();
-            return true;
-        },
-        onListEnd: function(sender,data) {            
-            var oNums = [];
-            FM.forEach(data.Added,function(id, obj) {
-                oNums.push(obj);
-                return true;
-            });
-            dmlist.removeListener(lstnr);
-            dmlist.dispose();
-            callbackFn(true,oNums);
-            return dmlist;
-        },
-        onListError: function(sender,data) {
-            dmlist.removeListener(lstnr);
-            dmlist.dispose();
-            
-            dmlist.removeListener(lstnr);
-            me.setLastError(me.getErrorObject(data));
-            callbackFn(false,OA.apiLastErr);
-            return true;
-        }
-    };
-    dmlist.addListener(lstnr);
-    dmlist.getData();            
-}
-
-
-OA.AppOneApi.prototype.getFreeTrialNumber = function(
-    notifyURL,
-    cbfn
-) {
-    // 
-    var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
-    
-    var me = this;
-    var params = {
-        notifyURL: notifyURL
-    };
-    
-   
-    var dmlist = new FM.DmList(params,'SMS_inbound_trial');
-    
-    var lstnr = {
-        onListStart: function(sender,data) {
-            me.setLastError();
-            return true;
-        },
-        onListEnd: function(sender,data) {            
-            var oNums = [];
-            FM.forEach(data.Added,function(id, obj) {
-                oNums.push(obj);
-                return true;
-            });
-            dmlist.removeListener(lstnr);
-            dmlist.dispose();
-            callbackFn(true,oNums);
-            return dmlist;
-        },
-        onListError: function(sender,data) {
-            dmlist.removeListener(lstnr);
-            dmlist.dispose();
-            
-            dmlist.removeListener(lstnr);
-            me.setLastError(me.getErrorObject(data));
-            callbackFn(false,OA.apiLastErr);
-            return true;
-        }
-    };
-    dmlist.addListener(lstnr);
-    dmlist.getData();            
-}
-
 OA.AppOneApi.prototype.retrieveRoamingStatus = function(
     sAddress,sNotifyURL,
     bExternalData, sClientCorrelator, sCallbackData, 
     cbfn
-) {
+    ) {
     // 
     var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
     if(!FM.isset(sAddress) || sAddress == '') {
@@ -714,6 +527,11 @@ OA.AppOneApi.prototype.retrieveRoamingStatus = function(
             });
             dmlist.removeListener(lstnr);
             dmlist.dispose();
+            if(!oRef.isAttr('currentRoaming'))  { // not found
+                me.setLastError(new FM.DmGenericError({messageId: 'CLI0001', text: 'Unable to query roaming status'}));
+                callbackFn(false,OA.apiLastErr);
+                return true;
+            }
             callbackFn(true,oRef);
             return dmlist;
         },
@@ -731,6 +549,39 @@ OA.AppOneApi.prototype.retrieveRoamingStatus = function(
     dmlist.getData();            
 }
 
+OA.AppOneApi.prototype.updateInboundSubscription = function(oSub,cbfn) {
+    // 
+    var me = this;
+    var callbackFn = FM.isset(cbfn) && FM.isFunction(cbfn) ? cbfn : function() {};
+    
+    var dmlist = new FM.DmList({
+        notifyURL: oSub.getAttr('notifyURL',''),
+        subscriptionId: oSub.getAttr('subscriptionId','')
+        },'SMS_inbound_update');    
+    var lstnr = {
+        onListStart: function(sender,data) {
+            me.setLastError();
+            return true;
+        },
+        onListEnd: function(sender,data) {
+            dmlist.removeListener(lstnr);
+            dmlist.dispose();
+            callbackFn(true,null);
+            return dmlist;
+        },
+        onListError: function(sender,data) {
+            dmlist.removeListener(lstnr);
+            dmlist.dispose();
+            
+            dmlist.removeListener(lstnr);
+            me.setLastError(me.getErrorObject(data));
+            callbackFn(false,OA.apiLastErr);
+            return true;
+        }
+    };
+    dmlist.addListener(lstnr);
+    dmlist.getData();            
+}
 
 
 
@@ -760,7 +611,9 @@ OA.AppOneApi.prototype.getCustomerProfile = function(id,callbackFn) {
     
     // ako je new
     if(id == 'new') {
-        oProfile = new OA.DmCustomerProfile({id: 'new'});
+        oProfile = new OA.DmCustomerProfile({
+            id: 'new'
+        });
         if(FM.isset(callbackFn)) {
             callbackFn(true,oProfile);
         }
@@ -780,7 +633,7 @@ OA.AppOneApi.prototype.getCustomerProfile = function(id,callbackFn) {
         id = '';
     }
     
-    oProfile = this.customersList.get(id);
+    oProfile = this.customersList.get(id == '' ? OA.apiAuth.getAttr('id','') : id);
 
     // ako nije fetchan a callback nije poslan vrati null
     // samo u slucaju kad je auth prosao
@@ -795,8 +648,8 @@ OA.AppOneApi.prototype.getCustomerProfile = function(id,callbackFn) {
                 callbackFn(ok,cp);
             }
         });
-    } else {
-        OA.apiAuth.setAttr('username',cp.getAttr('username',''))
+    } else if(oProfile && oProfile.getAttr('id','y') == OA.apiAuth.getAttr('id','x')) {
+        OA.apiAuth.setAttr('username',oProfile.getAttr('username',''))
         this.saveCredentials();        
     }
 
@@ -853,8 +706,8 @@ OA.AppOneApi.prototype.fetchCustomerProfile = function(id,callbackFn) {
 OA.AppOneApi.prototype.updateCustomerProfile = function(oCustomer,callbackFn) {
     callbackFn = FM.isset(callbackFn) && callbackFn && FM.isFunction(callbackFn) ? callbackFn : function() {};
     oCustomer = 
-        !FM.isset(oCustomer) || !oCustomer || oCustomer == '' || oCustomer == 'me'?
-        this.getCustomerProfile() :  oCustomer
+    !FM.isset(oCustomer) || !oCustomer || oCustomer == '' || oCustomer == 'me'?
+    this.getCustomerProfile() :  oCustomer
     ;
 
     if(!oCustomer || oCustomer.getSubClassName() != 'CustomerProfile') { 
@@ -897,9 +750,9 @@ OA.AppOneApi.prototype.updateCustomerProfile = function(oCustomer,callbackFn) {
 OA.AppOneApi.prototype.createCustomerProfile = function(oCustomer,callbackFn) {            
     callbackFn = FM.isset(callbackFn) && callbackFn && FM.isFunction(callbackFn) ? callbackFn : function() {};
     oCustomer = 
-        FM.isset(oCustomer) && oCustomer && oCustomer.getSubClassName() == 'CustomerProfile' ?
-        oCustomer : 
-        null
+    FM.isset(oCustomer) && oCustomer && oCustomer.getSubClassName() == 'CustomerProfile' ?
+    oCustomer : 
+    null
     ;
 
     if(!oCustomer) { 
@@ -1013,7 +866,7 @@ OA.AppOneApi.prototype.getAccountBalance = function(callbackFn) {
 
     var me = this;
     var dmlist = new FM.DmList({
-    },'CUSTOMER_balance_get');
+        },'CUSTOMER_balance_get');
     var lstnr = {
         onListStart: function(sender,data) {
             me.setLastError();
@@ -1099,7 +952,7 @@ OA.AppOneApi.prototype.onUpdateCustomerProfile = function(sender,evdata) {
         oCustomer.getAttr('id','') != "new" ? 
         this.updateCustomerProfile(oCustomer,FM.getAttr(evdata,'callback',null)) : 
         this.createCustomerProfile(oCustomer,FM.getAttr(evdata,'callback',null))
-    );
+        );
 }
 
 OA.AppOneApi.prototype.onCreateCustomerProfile = function(sender,evdata) {
@@ -1108,9 +961,15 @@ OA.AppOneApi.prototype.onCreateCustomerProfile = function(sender,evdata) {
     return this.createCustomerProfile(oCustomer);            
 }
 
+OA.AppOneApi.prototype.onChange = function(oObj) {   
+    if(oObj == OA.apiLastErr && OA.apiLastErr.getAttr("messageId") == 'SVC0003') {
+        this._clearAuthData();
+        //this.setLastError();
+        OA.apiAuth.setChanged(true,true);
+        this.fireEvent('onAuthChanged',OA.apiAuth);
+    }
+}   
 
 OA.AppOneApi.className = "AppOneApi";
 OA.AppOneApi.fullClassName = 'oa.AppOneApi';
-    
-    
     

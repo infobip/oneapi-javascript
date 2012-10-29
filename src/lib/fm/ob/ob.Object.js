@@ -135,6 +135,17 @@ FM.Object.prototype.removeListener = function(oListener) {
 }
 
 /**
+* Remove all listeners
+* @public     
+* @function 
+*/   
+FM.Object.prototype.removeAllListeners = function() {
+    this.listenersArr = {};
+    return true;
+}
+
+
+/**
 * Event function
 * @public     
 * @function 

@@ -97,8 +97,8 @@ OA.DmUserLoginData.prototype.objectSubClass = "";
 // methods
 OA.DmUserLoginData.prototype._init = function(attrs) {
     this._super("_init",attrs, {
-            username: '',
-            password: ''
+        username: '',
+        password: ''
     });
     this.objectSubClass = "DmUserLoginData";
 }
@@ -113,43 +113,6 @@ OA.DmUserLoginData.fullClassName = 'dm.DmUserLoginData';
 
 FM.DmObject.addSubClassType('UserLoginData',OA.DmUserLoginData);
 
-// -- user signup data ---------------------------------------------------------
-OA.DmUserSignupData = function() {
-    this._init.apply(this, arguments); 
-}
-
-FM.extendClass(OA.DmUserSignupData, FM.DmObject); 
-
-// properties
-OA.DmUserSignupData.prototype.objectSubClass = "";
-
-// methods
-OA.DmUserSignupData.prototype._init = function(attrs) {
-    this._super("_init",attrs, {
-            username: '',
-            forename: '',
-            surname: '',
-            email: '',
-            gsm: '',
-            countryCode: '',
-            timezoneId: '',
-            password: '',
-            password2: '', // dummy 
-            captchaId: '',
-            captchaAnswer: ''
-    });
-    this.objectSubClass = "DmUserSignupData";
-}
-        
-OA.DmUserSignupData.prototype.getDataID = function() {
-    return this.getAttr('username','');
-}
-
-
-OA.DmUserSignupData.className = "DmUserSignupData";
-OA.DmUserSignupData.fullClassName = 'dm.DmUserSignupData';
-
-FM.DmObject.addSubClassType('UserSignupData',OA.DmUserSignupData);
 
 // -- countries ----------------------------------------------------------------
 OA.DmCountry = function() {
@@ -164,11 +127,11 @@ OA.DmCountry.prototype.objectSubClass = "";
 // methods
 OA.DmCountry.prototype._init = function(attrs) {
     this._super("_init",attrs, {
-            id: '',
-            code: '',
-            prefix: '',
-            name: '',
-            locale: ''
+        id: '',
+        code: '',
+        prefix: '',
+        name: '',
+        locale: ''
     });
     this.objectSubClass = "DmCountry";
 }
@@ -196,14 +159,14 @@ OA.DmTimezone.prototype.objectSubClass = "";
 // methods
 OA.DmTimezone.prototype._init = function(attrs) {            
     this._super("_init",attrs, {
-            id: '',
-            name: '',
-            standardUtcOffset: '',
-            dstOffset: '',
-            dstStartTime: '',
-            dstEndTime: '',
-            countryId: '',
-            title: ''
+        id: '',
+        name: '',
+        standardUtcOffset: '',
+        dstOffset: '',
+        dstStartTime: '',
+        dstEndTime: '',
+        countryId: '',
+        title: ''
     });
     this.objectSubClass = "DmTimezone";
 
@@ -216,11 +179,11 @@ OA.DmTimezone.prototype._init = function(attrs) {
     offStr += (offH < 10 && offH > -10 ?
         '0' + '' + Math.abs(offH) :
         '' + Math.abs(offH)) +
-        ':' +
-        (offM < 10 && offM > -10 ?
+    ':' +
+    (offM < 10 && offM > -10 ?
         '0' + '' + offM :
         '' + offM) +
-        ') '
+    ') '
     ;
     
     this.setAttr('title',offStr + this.getAttr('name',''));
@@ -249,10 +212,10 @@ OA.DmLanguage.prototype.objectSubClass = "";
 // methods
 OA.DmLanguage.prototype._init = function(attrs) {
     this._super("_init",attrs, {
-            id: '',
-            languageCode: '',
-            languageName: '',
-            languageNameLocal: ''
+        id: '',
+        languageCode: '',
+        languageName: '',
+        languageNameLocal: ''
     });
     this.objectSubClass = "DmLanguage";
 }
@@ -266,44 +229,6 @@ OA.DmLanguage.className = "DmLanguage";
 OA.DmLanguage.fullClassName = 'dm.DmLanguage';
 
 FM.DmObject.addSubClassType('Language',OA.DmLanguage);
-
-// -- captcha ------------------------------------------------------------------
-OA.DmCaptcha = function() {
-    this._init.apply(this, arguments); 
-}
-
-FM.extendClass(OA.DmCaptcha, FM.DmObject); 
-
-// properties
-OA.DmCaptcha.prototype.objectSubClass = "";
-
-// methods
-OA.DmCaptcha.prototype._init = function(attrs) {
-    this._super("_init",attrs, {
-        id: '',
-        width: 0,
-        height: 0,
-        imageFormat: 'png',
-        image: ''
-    });
-    this.objectSubClass = "Captcha";
-}
-        
-OA.DmCaptcha.prototype.getDataID = function() {
-    return this.getAttr('id','');
-}
-
-OA.DmCaptcha.prototype.getImageUrl = function() {
-    return "data:image/" + this.getAttr('imageFormat','png') + 
-        ";base64," +  this.getAttr('image','')
-    ;
-}
-
-OA.DmCaptcha.className = "DmCaptcha";
-OA.DmCaptcha.fullClassName = 'dm.DmCaptcha';
-
-FM.DmObject.addSubClassType('Captcha',OA.DmCaptcha);
-
 
 // -- customer profile ---------------------------------------------------------
 OA.DmCustomerProfile = function() {
@@ -364,8 +289,8 @@ OA.DmSMSMessage.prototype._init = function(attrs) {
         address: '',
         notifyURL: '',
         callbackData: '',
-        dataCoding: '',
-        clientCorrelator: this.getID()
+        dataCoding: '0',
+        clientCorrelator: ''
     });
     this.objectSubClass = "SMSMessage";
 }
@@ -377,7 +302,64 @@ OA.DmSMSMessage.className = "DmSMSMessage";
 OA.DmSMSMessage.fullClassName = 'dm.DmSMSMessage';
 FM.DmObject.addSubClassType('SMSMessage',OA.DmSMSMessage);
 
-// -- SMS message --------------------------------------------------------------
+
+// Delivery info !! dupli (DmDeliveryInfoNotification)
+OA.DmDeliveryInfo = function() {
+    this._init.apply(this, arguments); // new poziva _init()
+}
+FM.extendClass(OA.DmDeliveryInfo, FM.DmObject); // extends FM.Object
+
+// properties
+OA.DmDeliveryInfo.prototype.objectSubClass = "";
+
+// methods
+OA.DmDeliveryInfo.prototype._init = function(attrs) {
+    this._super("_init",attrs, {
+        address: '',
+        deliveryStatus: ''
+    });
+    this.objectSubClass = "DeliveryInfo";
+}
+        
+OA.DmDeliveryInfo.prototype.getDataID = function() {
+    return this.getID();
+}
+
+OA.DmDeliveryInfo.className = "DmDeliveryInfo";
+OA.DmDeliveryInfo.fullClassName = 'dm.DmDeliveryInfo';
+FM.DmObject.addSubClassType('DeliveryInfo',OA.DmDeliveryInfo);
+
+
+// delivery status of SMS message
+OA.DmDeliveryInfoNotification = function() {
+    this._init.apply(this, arguments); // new poziva _init()
+}
+FM.extendClass(OA.DmDeliveryInfoNotification, FM.DmObject); // extends FM.Object
+
+// properties
+OA.DmDeliveryInfoNotification.prototype.objectSubClass = "";
+
+// methods
+OA.DmDeliveryInfoNotification.prototype._init = function(attrs) {
+    this._super("_init",attrs, {
+        deliveryInfo: {
+            address: '',
+            deliveryStatus: ''
+        },
+        callbackData: ''
+    });
+    this.objectSubClass = "DeliveryInfoNotification";
+}
+        
+OA.DmDeliveryInfoNotification.prototype.getDataID = function() {
+    return this.getID();
+}
+
+OA.DmDeliveryInfoNotification.className = "DmDeliveryInfoNotification";
+OA.DmDeliveryInfoNotification.fullClassName = 'dm.DmDeliveryInfoNotification';
+FM.DmObject.addSubClassType('DeliveryInfoNotification',OA.DmDeliveryInfoNotification);
+
+// -- REST resource reference --------------------------------------------------
 OA.DmResourceReference = function() {
     this._init.apply(this, arguments); // new poziva _init()
 }
@@ -389,7 +371,8 @@ OA.DmResourceReference.prototype.objectSubClass = "";
 // methods
 OA.DmResourceReference.prototype._init = function(attrs) {
     this._super("_init",attrs, {
-        resourceURL: ''
+        resourceURL: '',
+        resourceObject: null
     });
     this.objectSubClass = "ResourceReference";
 }
@@ -401,32 +384,125 @@ OA.DmSMSMessage.className = "DmResourceReference";
 OA.DmSMSMessage.fullClassName = 'dm.DmResourceReference';
 FM.DmObject.addSubClassType('ResourceReference',OA.DmResourceReference);
 
-
-// -- resource reference -------------------------------------------------------
-OA.DmResourceReference = function() {
+// -- inbound message ----------------------------------------------------------
+OA.DmInboundMessage = function() {
     this._init.apply(this, arguments); // new poziva _init()
 }
-FM.extendClass(OA.DmResourceReference, FM.DmObject); // extends FM.Object
+FM.extendClass(OA.DmInboundMessage, FM.DmObject); // extends FM.Object
 
 // properties
-OA.DmResourceReference.prototype.objectSubClass = "";
+OA.DmInboundMessage.prototype.objectSubClass = "";
 
 // methods
-OA.DmResourceReference.prototype._init = function(attrs) {
+OA.DmInboundMessage.prototype._init = function(attrs) {
     this._super("_init",attrs, {
-        resourceURL: ''
+        dateTime: '',
+        destinationAddress: '',
+        messageId: '',
+        message: '',
+        resourceURL: '',
+        senderAddress: ''
     });
-    this.objectSubClass = "ResourceReference";
+    this.objectSubClass = "InboundMessage";
 }
         
-OA.DmResourceReference.prototype.getDataID = function() {
-    return this.getAttr('resourceURL','');
+OA.DmInboundMessage.prototype.getDataID = function() {
+    return this.getID();
 }
-OA.DmResourceReference.className = "DmResourceReference";
-OA.DmResourceReference.fullClassName = 'dm.DmResourceReference';
-FM.DmObject.addSubClassType('ResourceReference',OA.DmResourceReference);
 
-// -- Hlr request status -------------------------------------------------------
+OA.DmInboundMessage.className = "DmInboundMessage";
+OA.DmInboundMessage.fullClassName = 'dm.DmInboundMessage';
+FM.DmObject.addSubClassType('InboundMessage',OA.DmInboundMessage);
+
+// inboud query
+OA.DmInboundQuery = function() {
+    this._init.apply(this, arguments); // new poziva _init()
+}
+FM.extendClass(OA.DmInboundQuery, FM.DmObject); // extends FM.Object
+
+// properties
+OA.DmInboundQuery.prototype.objectSubClass = "";
+
+// methods
+OA.DmInboundQuery.prototype._init = function(attrs) {
+    this._super("_init",attrs, {
+        subscriptionId: '',
+        maxBatchSize: '100'
+    });
+    this.objectSubClass = "InboundQuery";
+}
+        
+OA.DmInboundQuery.prototype.getDataID = function() {
+    return this.getAttr('subscriptionId','');
+}
+
+OA.DmInboundQuery.className = "DmInboundQuery";
+OA.DmInboundQuery.fullClassName = 'dm.DmInboundQuery';
+FM.DmObject.addSubClassType('InboundQuery',OA.DmInboundQuery);
+
+// inbound subscription
+OA.DmMoSubscription = function() {
+    this._init.apply(this, arguments); // new poziva _init()
+}
+FM.extendClass(OA.DmMoSubscription, FM.DmObject); // extends FM.Object
+
+// properties
+OA.DmMoSubscription.prototype.objectSubClass = "";
+
+// methods
+OA.DmMoSubscription.prototype._init = function(attrs) {
+    this._super("_init",attrs, {        
+        subscriptionId: '',
+        notifyURL: '',
+        callbackData: '',
+        criteria:"",
+        destinationAddress: '',
+        notificationFormat: '',
+        title: ''
+    });
+    this.objectSubClass = "MoSubscription";
+    
+    this.setAttr('title',this.getAttr('destinationAddress','') + ', ' + this.getAttr('criteria',''));
+    this.setChanged(false,false);
+}
+        
+OA.DmMoSubscription.prototype.getDataID = function() {
+    return this.getAttr('subscriptionId','');
+}
+OA.DmMoSubscription.className = "DmMoSubscription";
+OA.DmMoSubscription.fullClassName = 'dm.DmMoSubscription';
+FM.DmObject.addSubClassType('MoSubscription',OA.DmMoSubscription);
+
+
+// -- Hlr requests -------------------------------------------------------------
+OA.DmTerminalRoamingQuery = function() {
+    this._init.apply(this, arguments); // new poziva _init()
+}
+FM.extendClass(OA.DmTerminalRoamingQuery, FM.DmObject); // extends FM.Object
+
+// properties
+OA.DmTerminalRoamingQuery.prototype.objectSubClass = "";
+
+// methods
+OA.DmTerminalRoamingQuery.prototype._init = function(attrs) {
+    this._super("_init",attrs, {        
+        address: '',
+        notifyURL:'',
+        includeExtendedData:'',
+        clientCorrelator: '',
+        callbackData: ''
+    });
+    this.objectSubClass = "DmTerminalRoamingQuery";
+}
+        
+OA.DmTerminalRoamingQuery.prototype.getDataID = function() {
+    return this.getAttr('address','');
+}
+OA.DmTerminalRoamingQuery.className = "DmTerminalRoamingQuery";
+OA.DmTerminalRoamingQuery.fullClassName = 'dm.DmTerminalRoamingQuery';
+FM.DmObject.addSubClassType('TerminalRoamingQuery',OA.DmTerminalRoamingQuery);
+
+
 OA.DmTerminalRoamingStatus = function() {
     this._init.apply(this, arguments); // new poziva _init()
 }
@@ -488,68 +564,8 @@ OA.DmAccountBalance.className = "DmAccountBalance";
 OA.DmAccountBalance.fullClassName = 'dm.DmAccountBalance';
 FM.DmObject.addSubClassType('AccountBalance',OA.DmAccountBalance);
 
-// -- Inbound message ----------------------------------------------------------
-OA.DmMoSubscription = function() {
-    this._init.apply(this, arguments); // new poziva _init()
-}
-FM.extendClass(OA.DmMoSubscription, FM.DmObject); // extends FM.Object
 
-// properties
-OA.DmMoSubscription.prototype.objectSubClass = "";
-
-// methods
-OA.DmMoSubscription.prototype._init = function(attrs) {
-    this._super("_init",attrs, {
-        subscriptionId: '',
-        notifyURL: '',
-        callbackData: '',
-        criteria:"",
-        destinationAddress: '',
-        notificationFormat: ''        
-    });
-    this.objectSubClass = "MoSubscription";
-}
-        
-OA.DmMoSubscription.prototype.getDataID = function() {
-    return this.getAttr('subscriptionId','');
-}
-OA.DmMoSubscription.className = "DmMoSubscription";
-OA.DmMoSubscription.fullClassName = 'dm.DmMoSubscription';
-FM.DmObject.addSubClassType('MoSubscription',OA.DmMoSubscription);
-
-
-// -- Delivery info notification -----------------------------------------------
-OA.DmDeliveryInfoNotification = function() {
-    this._init.apply(this, arguments); // new poziva _init()
-}
-FM.extendClass(OA.DmDeliveryInfoNotification, FM.DmObject); // extends FM.Object
-
-// properties
-OA.DmDeliveryInfoNotification.prototype.objectSubClass = "";
-
-// methods
-OA.DmDeliveryInfoNotification.prototype._init = function(attrs) {
-//{"deliveryInfoNotification": { "callbackData": "12345", "deliveryInfo": { "address": "tel:+1350000001", "deliveryStatus": "DeliveredToNetwork"}, }}    
-    this._super("_init",attrs, {
-        deliveryInfo: {
-            address: '',
-            deliveryStatus: ''
-        },
-        callbackData: ''
-    });
-    this.objectSubClass = "DeliveryInfoNotification";
-}
-        
-OA.DmDeliveryInfoNotification.prototype.getDataID = function() {
-    return this.getID();
-}
-
-OA.DmDeliveryInfoNotification.className = "DmDeliveryInfoNotification";
-OA.DmDeliveryInfoNotification.fullClassName = 'dm.DmDeliveryInfoNotification';
-FM.DmObject.addSubClassType('DeliveryInfoNotification',OA.DmDeliveryInfoNotification);
-
-
-// -- Inbound sms message ------------------------------------------------------
+// Inbound sms message 
 OA.DmInboundSmsMessage = function() {
     this._init.apply(this, arguments); // new poziva _init()
 }
@@ -561,12 +577,12 @@ OA.DmInboundSmsMessage.prototype.objectSubClass = "";
 // methods
 OA.DmInboundSmsMessage.prototype._init = function(attrs) {
     this._super("_init",attrs, {
-    messageId: '',
-    dateTime: '',
-    destinationAddress: '',    
-    message: '',
-    resourceURL: '',
-    senderAddress: ''
+        messageId: '',
+        dateTime: '',
+        destinationAddress: '',    
+        message: '',
+        resourceURL: '',
+        senderAddress: ''
     });
     this.objectSubClass = "InboundSmsMessage";
 }
@@ -578,33 +594,6 @@ OA.DmInboundSmsMessage.prototype.getDataID = function() {
 OA.DmInboundSmsMessage.className = "DmInboundSmsMessage";
 OA.DmInboundSmsMessage.fullClassName = 'dm.DmInboundSmsMessage';
 FM.DmObject.addSubClassType('InboundSmsMessage',OA.DmInboundSmsMessage);
-
-// -- Delivery info ------------------------------------------------------------
-OA.DmDeliveryInfo = function() {
-    this._init.apply(this, arguments); // new poziva _init()
-}
-FM.extendClass(OA.DmDeliveryInfo, FM.DmObject); // extends FM.Object
-
-// properties
-OA.DmDeliveryInfo.prototype.objectSubClass = "";
-
-// methods
-OA.DmDeliveryInfo.prototype._init = function(attrs) {
-    this._super("_init",attrs, {
-    address: '',
-    deliveryStatus: ''
-    });
-    this.objectSubClass = "DeliveryInfo";
-}
-        
-OA.DmDeliveryInfo.prototype.getDataID = function() {
-    return this.getID();
-}
-
-OA.DmDeliveryInfo.className = "DmDeliveryInfo";
-OA.DmDeliveryInfo.fullClassName = 'dm.DmDeliveryInfo';
-FM.DmObject.addSubClassType('DeliveryInfo',OA.DmDeliveryInfo);
-
 
 // -- Mo Available Numbers -----------------------------------------------------
 OA.DmMoAvailableNumber = function() {
@@ -639,5 +628,30 @@ FM.DmObject.addSubClassType('MoAvailableNumber',OA.DmMoAvailableNumber);
 
 
 
+//-- USSD ----------------------------------------------------------------------
+OA.DmUSSDQuery = function() {
+    this._init.apply(this, arguments); // new poziva _init()
+}
+FM.extendClass(OA.DmUSSDQuery, FM.DmObject); // extends FM.Object
 
+// properties
+OA.DmUSSDQuery.prototype.objectSubClass = "";
+
+// methods
+OA.DmUSSDQuery.prototype._init = function(attrs) {
+    this._super("_init",attrs, {        
+        address: '',
+        message:'',
+        stopSession: 'false',
+        _ussd_function: null
+    });
+    this.objectSubClass = "USSDQuery";
+}
+        
+OA.DmUSSDQuery.prototype.getDataID = function() {
+    return this.getID();
+}
+OA.DmUSSDQuery.className = "DmUSSDQuery";
+OA.DmUSSDQuery.fullClassName = 'dm.DmUSSDQuery';
+FM.DmObject.addSubClassType('USSDQuery',OA.DmUSSDQuery);
 

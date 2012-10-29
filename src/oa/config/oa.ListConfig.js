@@ -163,67 +163,7 @@ FM.DmList.addConfiguration('USER_logout', {
     responseParser: OA.responseParser    
 });
 
-// -- captcha ------------------------------------------------------------------
-FM.DmList.addConfiguration('UTIL_captcha', {  
-    resourcePath: '/captcha/generate',
-    url: OA.getApiUrl,
-    method: OA.getApiMethod,
-    resourceMethod: 'POST',
-    contentType: 'application/x-www-form-urlencoded',
-    params: {
-        width: true,
-        height: true,
-        imageFormat: true
-    },
-    headers: OA.getApiHeaders,
-    auth: null,        
-    responseFormat: 'JSON',
-    validResponseCodes: '200',
-    listType: 'single',
-    dataProperty: '',
-    //
-    isErrorResponse: OA.isErrorResponse,
-    errorParser: OA.errorParser,
-    responseParser: OA.responseParser, 
-    // custom
-    _responseClass: OA.DmCaptcha
-});
-
-// -- user signup --------------------------------------------------------------
-FM.DmList.addConfiguration('USER_signup', {
-    resourcePath: '/customerProfile/signup',
-    url: OA.getApiUrl,
-    // ajax config
-    method: OA.getApiMethod,
-    resourceMethod: 'POST',
-    contentType: 'application/x-www-form-urlencoded',
-    params: {
-        username: true,
-        password: true,
-        forename: true,
-        surname: true,
-        email: true,
-        gsm: true,
-        countryCode: true,
-        timezoneId: true,
-        // captcha
-        captchaId: true,
-        captchaAnswer: true        
-    },
-    headers: OA.getApiHeaders,
-    auth: null,
-    responseFormat: 'JSON',
-    validResponseCodes: '201', // created            
-    listType: 'single',
-    dataProperty: 'signup',
-    //
-    isErrorResponse: OA.isErrorResponse,
-    errorParser: OA.errorParser,
-    responseParser: OA.responseParser, 
-    // custom
-    _responseClass: OA.DmUserCredentials    
-});
-
+// == utils ====================================================================
 // -- list of countries --------------------------------------------------------
 FM.DmList.addConfiguration('UTIL_countries', {
     resourcePath: '/countries/[:id]',
@@ -296,103 +236,6 @@ FM.DmList.addConfiguration('UTIL_languages', {
     _responseClass: OA.DmLanguage
 });
 
-// -- user verify --------------------------------------------------------------
-FM.DmList.addConfiguration('USER_verify', {
-    resourcePath: '/customerProfile/verify',
-    url: OA.getApiUrl,
-    // ajax config
-    method: OA.getApiMethod,
-    resourceMethod: 'POST',
-    contentType: 'application/x-www-form-urlencoded',
-    params: {
-        verificationCode: true
-    },
-    headers: OA.getApiHeaders,
-    auth: null,
-    responseFormat: 'JSON',
-    validResponseCodes: '200',
-    listType: 'single',
-    dataProperty: '',
-    //
-    isErrorResponse: OA.isErrorResponse,
-    errorParser: OA.errorParser,
-    responseParser: OA.responseParser
-});
-
-// -- user password check ------------------------------------------------------
-FM.DmList.addConfiguration('USER_password_check', {
-    resourcePath: '/customerProfile/password/check',
-    url: OA.getApiUrl,
-    // ajax config
-    method: OA.getApiMethod,
-    resourceMethod: 'GET',
-    contentType: 'application/x-www-form-urlencoded',
-    params: {
-        password: true
-    },
-    headers: OA.getApiHeaders,
-    auth: null,
-    responseFormat: 'JSON',
-    validResponseCodes: '200',
-    listType: 'single'
-});
-
-// -- user password generate ---------------------------------------------------
-FM.DmList.addConfiguration('USER_password_generate', {
-    resourcePath: '/customerProfile/password/generate',
-    url: OA.getApiUrl,
-    // ajax config
-    method: OA.getApiMethod,
-    resourceMethod: 'GET',
-    contentType: 'application/x-www-form-urlencoded',
-    params: {},
-    headers: OA.getApiHeaders,
-    auth: null,
-    responseFormat: 'JSON',
-    validResponseCodes: '201',
-    listType: 'single'
-});
-
-// -- user username check for avialibility -------------------------------------
-FM.DmList.addConfiguration('USER_username_check', {
-    resourcePath: '/customerProfile/username/check',
-    url: OA.getApiUrl,
-    // ajax config
-    method: OA.getApiMethod,
-    resourceMethod: 'GET',
-    contentType: 'application/x-www-form-urlencoded',
-    params: {
-        username: true
-    },
-    headers: OA.getApiHeaders,
-    auth: null,
-    responseFormat: 'JSON',
-    validResponseCodes: '200',
-    listType: 'single'
-});
-
-
-// -- user password change -----------------------------------------------------
-FM.DmList.addConfiguration('USER_password_change', {
-    resourcePath: '/customerProfile/changePassword',
-    url: OA.getApiUrl,
-    // ajax config
-    method: OA.getApiMethod,
-    resourceMethod: 'POST',
-    contentType: 'application/x-www-form-urlencoded',
-    params: {
-        oldPassword: true,
-        newPassword: true,
-        newPassword2: true
-    },
-    headers: OA.getApiHeaders,
-    auth: null,
-    responseFormat: 'JSON',
-    validResponseCodes: '200',
-    listType: 'single'
-});
-
-
 // == profile managment ========================================================
 // -- customer profile ---------------------------------------------------------
 // ovo bi trebalo odraditi poziv sa i bez id-a
@@ -428,7 +271,7 @@ FM.DmList.addConfiguration('CUSTOMER_profile_update', {
     
     // ajax config
     method: OA.getApiMethod,
-    resourceMethod: 'POST',
+    resourceMethod: 'PUT',
     contentType: 'application/x-www-form-urlencoded',
     params: {
         id: true,
@@ -465,7 +308,31 @@ FM.DmList.addConfiguration('CUSTOMER_profile_update', {
     _responseClass: OA.DmCustomerProfile
 });
 
-// == SMS ======================================================================
+// == MO =======================================================================
+FM.DmList.addConfiguration('SMS_inbound_update', {
+    resourcePath: '/smsmessaging/inbound/subscriptions',
+    url: OA.getApiUrl,
+    
+    // ajax config
+    method: OA.getApiMethod,
+    resourceMethod: 'PUT',
+    contentType: 'application/x-www-form-urlencoded',
+    params: {
+        notifyURL: true,
+        subscriptionId: true
+    },
+    headers: OA.getApiHeaders,
+    auth: null,
+    responseFormat: 'TEXT',
+    validResponseCodes: '201',
+    listType: 'single',
+    dataProperty: '',
+    //
+    isErrorResponse: OA.isErrorResponse,
+    errorParser: OA.errorParser,
+    responseParser: OA.responseParser
+});
+
 FM.DmList.addConfiguration('SMS_inbound_sub_get', {
     resourcePath: '/smsmessaging/inbound/subscriptions',
     url: OA.getApiUrl,
@@ -522,7 +389,28 @@ FM.DmList.addConfiguration('SMS_inbound_sub_add', {
     _responseClass: FM.DmGenericValue
 });
 
-
+FM.DmList.addConfiguration('SMS_inbound_sub_delete', {
+    resourcePath: '/smsmessaging/inbound/subscriptions/[:subscriptionId]',
+    url: OA.getApiUrl,
+    
+    // ajax config
+    method: OA.getApiMethod,
+    resourceMethod: 'DELETE',
+    contentType: 'application/x-www-form-urlencoded',
+    params: {
+        subscriptionId: ''
+    },
+    headers: OA.getApiHeaders,
+    auth: null,
+    responseFormat: 'TEXT',
+    validResponseCodes: '204',
+    listType: 'single',
+    dataProperty: '',
+    //
+    isErrorResponse: OA.isErrorResponse,
+    errorParser: OA.errorParser,
+    responseParser: OA.responseParser
+});
 
 FM.DmList.addConfiguration('SMS_inbound_available', {
     resourcePath: '/smsmessaging/inbound/available',
@@ -571,7 +459,7 @@ FM.DmList.addConfiguration('SMS_inbound_trial', {
     responseFormat: 'JSON',
     validResponseCodes: '200',
     listType: 'collection',
-    dataProperty: 'numbers',
+    dataProperty: 'availableNumbers',
     //
     isErrorResponse: OA.isErrorResponse,
     errorParser: OA.errorParser,
@@ -580,7 +468,34 @@ FM.DmList.addConfiguration('SMS_inbound_trial', {
     _responseClass: OA.DmMoAvailableNumber
 });
 
+FM.DmList.addConfiguration('SMS_inbound_get_messages', {
+    resourcePath: '/smsmessaging/inbound/registrations/[:subscriptionId]/messages',
+    url: OA.getApiUrl,
+    
+    // ajax config
+    method: OA.getApiMethod,
+    resourceMethod: 'GET',
+    contentType: 'application/x-www-form-urlencoded',
+    params: {
+        subscriptionId: true,
+        maxBatchSize: true
+    },
+    headers: OA.getApiHeaders,
+    auth: null,
+    responseFormat: 'JSON',
+    validResponseCodes: '200',
+    listType: 'collection',
+    dataProperty: 'inboundSMSMessageList.inboundSMSMessage',
+    //
+    isErrorResponse: OA.isErrorResponse,
+    errorParser: OA.errorParser,
+    responseParser: OA.responseParser, 
+    
+    // custom
+    _responseClass: OA.DmInboundMessage
+});
 
+// == SMS ======================================================================
 FM.DmList.addConfiguration('SMS_send', {
     resourcePath: '/smsmessaging/outbound/[:senderAddress]/requests',
     url: OA.getApiUrl,
@@ -611,6 +526,34 @@ FM.DmList.addConfiguration('SMS_send', {
     responseParser: OA.responseParser, 
     // custom
     _responseClass: OA.DmResourceReference
+});
+
+// Delivery info
+FM.DmList.addConfiguration('DELIVERY_INFOS_get', {
+    resourcePath: '/smsmessaging/outbound/[:senderAddress]/requests/[:requestID]/deliveryInfos',
+    url: OA.getApiUrl,
+    
+    // ajax config
+    method: OA.getApiMethod,
+    resourceMethod: 'GET',
+    contentType: 'application/x-www-form-urlencoded',
+    params: {
+        senderAddress: true,
+        requestID: true
+    },
+    headers: OA.getApiHeaders,
+    auth: null,
+    responseFormat: 'JSON',
+    validResponseCodes: '200',
+    listType: 'collection',
+    dataProperty: 'deliveryInfoList.deliveryInfo',
+    //
+    isErrorResponse: OA.isErrorResponse,
+    errorParser: OA.errorParser,
+    responseParser: OA.responseParser, 
+    
+    // custom
+    _responseClass: OA.DmDeliveryInfo
 });
 
 // == HLR ======================================================================
@@ -644,6 +587,60 @@ FM.DmList.addConfiguration('HLR_send', {
     _responseClass: OA.DmTerminalRoamingStatus
 });
 
+    
+// == USSD =====================================================================
+FM.DmList.addConfiguration('USSD_send', {
+    resourcePath: '/ussd/outbound',
+    url: OA.getApiUrl,
+    
+    // ajax config
+    method: OA.getApiMethod,
+    resourceMethod: 'POST',
+    contentType: 'application/x-www-form-urlencoded',
+    params: {
+        address: true,
+        message: true,
+        stopSession: true
+    },
+    headers: OA.getApiHeaders,
+    auth: null,
+    responseFormat: 'JSON',
+    validResponseCodes: '200',
+    listType: 'single',
+    dataProperty: '',
+    //
+    isErrorResponse: OA.isErrorResponse,
+    errorParser: OA.errorParser,
+    responseParser: OA.responseParser, 
+    // custom
+    _responseClass: OA.DmInboundMessage
+});
+
+FM.DmList.addConfiguration('USSD_send_stop', {
+    resourcePath: '/ussd/outbound',
+    url: OA.getApiUrl,
+    
+    // ajax config
+    method: OA.getApiMethod,
+    resourceMethod: 'POST',
+    contentType: 'application/x-www-form-urlencoded',
+    params: {
+        address: true,
+        message: true,
+        stopSession: true
+    },
+    headers: OA.getApiHeaders,
+    auth: null,
+    responseFormat: 'TEXT',
+    validResponseCodes: '200',
+    listType: 'single',
+    dataProperty: '',
+    //
+    isErrorResponse: OA.isErrorResponse,
+    errorParser: OA.errorParser,
+    responseParser: OA.responseParser
+});
+
 // == Account balance ==========================================================
 FM.DmList.addConfiguration('CUSTOMER_balance_get', {
     resourcePath: '/customerProfile/balance',
@@ -667,32 +664,4 @@ FM.DmList.addConfiguration('CUSTOMER_balance_get', {
     
     // custom
     _responseClass: OA.DmAccountBalance
-});
-    
-// == Delivery infos ===========================================================
-FM.DmList.addConfiguration('DELIVERY_INFOS_get', {
-    resourcePath: '/smsmessaging/outbound/[:senderAddress]/requests/[:requestID]/deliveryInfos',
-    url: OA.getApiUrl,
-    
-    // ajax config
-    method: OA.getApiMethod,
-    resourceMethod: 'GET',
-    contentType: 'application/x-www-form-urlencoded',
-    params: {
-        senderAddress: true,
-        requestID: true
-    },
-    headers: OA.getApiHeaders,
-    auth: null,
-    responseFormat: 'JSON',
-    validResponseCodes: '200',
-    listType: 'collection',
-    dataProperty: 'deliveryInfoList',
-    //
-    isErrorResponse: OA.isErrorResponse,
-    errorParser: OA.errorParser,
-    responseParser: OA.responseParser, 
-    
-    // custom
-    _responseClass: OA.DmDeliveryInfo
 });

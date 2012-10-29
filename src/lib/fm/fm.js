@@ -105,9 +105,11 @@ FM.applyTemplate = function(attrs,template,escapeValues,encodeValues) {
     if(attrs) {
         FM.forEach(attrs,function(name,value) {
             if(!FM.isset(value) || !value) value = '';
-            if(!FM.isFunction(value) && !FM.isObject(value) && !FM.isArray(value)) {
+            if(!FM.isFunction(value) && !FM.isObject(value) && !FM.isArray(value)) {                
                 if(FM.isset(encodeValues) && encodeValues == true) {
                     val = FM.urlEncode(value.toString());
+                } else {
+                    val = value;
                 }
                 if(FM.isset(escapeValues) && escapeValues != false) {
                     val = FM.escapeStr(val);
@@ -425,8 +427,9 @@ FM.unserialize = function(str,def) {
     return def;
 }
 
-FM.deleteCookie = function(name) {
-    document.cookie = name + '=; expires=Thu, 01-Jan-70 00:00:01 GMT;';
+FM.deleteCookie = function(name,domain) {
+    FM.saveCookie(name,"",0,domain);
+//document.cookie = name + '=; expires=Thu, 01-Jan-70 00:00:01 GMT;';
 }
 
 FM.saveCookie = function(name,value,expiredays,domain) {
@@ -1341,3 +1344,6 @@ FM.expandToFullSCreen = function(elmid) {
         elem.webkitRequestFullScreen();
     }    
 }
+
+
+

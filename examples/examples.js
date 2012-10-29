@@ -109,15 +109,15 @@ function getAccountBalanceExample() {
 }
 
 // get list of MO subscriptions
-function retrieveInboundMessagesExample() {
+function retrieveInboundSubscriptionsExample() {
     // example: retrieve-inbound-messages    
-    oneapi.retrieveInboundMessages(1,99,function(isOk,oResponse) { 
+    oneapi.retrieveInboundSubscriptions(1,99,function(isOk,oResponse) { 
         if(!isOk) { // oResponse is DmApiError
             // Handle error
-            // alert('Unable to retrieve inbound messages: ' + oResponse.getErrorText());                            
-            log("Error: Unable to retrieve inbound messages:" + oResponse.getErrorText()); // example-ignore
-        } else { // oResponse is array of DmInboundMessage objects
-            log("Inbound messages list:"); // example-ignore
+            // alert('Unable to retrieve inbound subscriptions: ' + oResponse.getErrorText());                            
+            log("Error: Unable to retrieve inbound subscriptions:" + oResponse.getErrorText()); // example-ignore
+        } else { // oResponse is array of DmMoSubscription objects
+            log("Inbound subscriptions list:"); // example-ignore
             for(var i=0; i < oResponse.length; i++) {
                 // ...
                 log('' + i + ')'); // example-ignore

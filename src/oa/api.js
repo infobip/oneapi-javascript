@@ -156,7 +156,7 @@ if(typeof(oneapi) == 'undefined') {
         return oneapi.session.app.sendSMS(address,clientCorrelatorOrResourceReference,callbackFn);
     }
 
-    oneapi.retrieveInboundMessages = function(
+    oneapi.retrieveInboundSubscriptions = function(
     /*
         destinationAddress,notifyURL,
         criteria,notificationFormat,
@@ -166,7 +166,7 @@ if(typeof(oneapi) == 'undefined') {
         page,pageSize,
         callbackFn
     ) {
-        return oneapi.session.app.retrieveInboundMessages(
+        return oneapi.session.app.retrieveInboundSubscriptions(
         /*
             destinationAddress,notifyURL,
             criteria,notificationFormat,
