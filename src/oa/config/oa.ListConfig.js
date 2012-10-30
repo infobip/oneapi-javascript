@@ -412,62 +412,6 @@ FM.DmList.addConfiguration('SMS_inbound_sub_delete', {
     responseParser: OA.responseParser
 });
 
-FM.DmList.addConfiguration('SMS_inbound_available', {
-    resourcePath: '/smsmessaging/inbound/available',
-    url: OA.getApiUrl,
-    
-    // ajax config
-    method: OA.getApiMethod,
-    resourceMethod: 'GET',
-    contentType: 'application/x-www-form-urlencoded',
-    params: {
-        countryId: true,
-        dateFrom: true,
-        dateTo: true,
-        criteria: true,
-        free: true,
-        page: true,
-        pageSize: true
-    },
-    headers: OA.getApiHeaders,
-    auth: null,
-    responseFormat: 'JSON',
-    validResponseCodes: '200',
-    listType: 'collection',
-    dataProperty: 'availableNumbers',
-    //
-    isErrorResponse: OA.isErrorResponse,
-    errorParser: OA.errorParser,
-    responseParser: OA.responseParser, 
-    // custom
-    _responseClass: OA.DmMoAvailableNumber
-});
-
-FM.DmList.addConfiguration('SMS_inbound_trial', {
-    resourcePath: '/smsmessaging/inbound/freeTrial',
-    url: OA.getApiUrl,
-    
-    // ajax config
-    method: OA.getApiMethod,
-    resourceMethod: 'POST',
-    contentType: 'application/x-www-form-urlencoded',
-    params: {
-        notifyURL: true
-    },
-    headers: OA.getApiHeaders,
-    auth: null,
-    responseFormat: 'JSON',
-    validResponseCodes: '200',
-    listType: 'collection',
-    dataProperty: 'availableNumbers',
-    //
-    isErrorResponse: OA.isErrorResponse,
-    errorParser: OA.errorParser,
-    responseParser: OA.responseParser, 
-    // custom
-    _responseClass: OA.DmMoAvailableNumber
-});
-
 FM.DmList.addConfiguration('SMS_inbound_get_messages', {
     resourcePath: '/smsmessaging/inbound/registrations/[:subscriptionId]/messages',
     url: OA.getApiUrl,

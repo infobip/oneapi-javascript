@@ -147,6 +147,7 @@ OA.AppOneApi.prototype.login = function(username, password,cbfn) {
             });
             dmlist.removeListener(lstnr);
             dmlist.dispose();
+            
             oCred.forEachAttr(function(name,value) {
                 OA.apiAuth.setAttr(name,value);
                 return true;

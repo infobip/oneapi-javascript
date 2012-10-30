@@ -440,40 +440,6 @@ OA.DmInboundQuery.className = "DmInboundQuery";
 OA.DmInboundQuery.fullClassName = 'dm.DmInboundQuery';
 FM.DmObject.addSubClassType('InboundQuery',OA.DmInboundQuery);
 
-// inbound subscription
-OA.DmMoSubscription = function() {
-    this._init.apply(this, arguments); // new poziva _init()
-}
-FM.extendClass(OA.DmMoSubscription, FM.DmObject); // extends FM.Object
-
-// properties
-OA.DmMoSubscription.prototype.objectSubClass = "";
-
-// methods
-OA.DmMoSubscription.prototype._init = function(attrs) {
-    this._super("_init",attrs, {        
-        subscriptionId: '',
-        notifyURL: '',
-        callbackData: '',
-        criteria:"",
-        destinationAddress: '',
-        notificationFormat: '',
-        title: ''
-    });
-    this.objectSubClass = "MoSubscription";
-    
-    this.setAttr('title',this.getAttr('destinationAddress','') + ', ' + this.getAttr('criteria',''));
-    this.setChanged(false,false);
-}
-        
-OA.DmMoSubscription.prototype.getDataID = function() {
-    return this.getAttr('subscriptionId','');
-}
-OA.DmMoSubscription.className = "DmMoSubscription";
-OA.DmMoSubscription.fullClassName = 'dm.DmMoSubscription';
-FM.DmObject.addSubClassType('MoSubscription',OA.DmMoSubscription);
-
-
 // -- Hlr requests -------------------------------------------------------------
 OA.DmTerminalRoamingQuery = function() {
     this._init.apply(this, arguments); // new poziva _init()
@@ -595,38 +561,37 @@ OA.DmInboundSmsMessage.className = "DmInboundSmsMessage";
 OA.DmInboundSmsMessage.fullClassName = 'dm.DmInboundSmsMessage';
 FM.DmObject.addSubClassType('InboundSmsMessage',OA.DmInboundSmsMessage);
 
-// -- Mo Available Numbers -----------------------------------------------------
-OA.DmMoAvailableNumber = function() {
+// MO subscription
+OA.DmMoSubscription = function() {
     this._init.apply(this, arguments); // new poziva _init()
 }
-FM.extendClass(OA.DmMoAvailableNumber, FM.DmObject); // extends FM.Object
+FM.extendClass(OA.DmMoSubscription, FM.DmObject); // extends FM.Object
 
 // properties
-OA.DmMoAvailableNumber.prototype.objectSubClass = "";
+OA.DmMoSubscription.prototype.objectSubClass = "";
 
 // methods
-OA.DmMoAvailableNumber.prototype._init = function(attrs) {
+OA.DmMoSubscription.prototype._init = function(attrs) {
     this._super("_init",attrs, {
-        id: '',
-        number: '',
-        free: '',
-        moNoTypeId: '',
-        gSMModemId: '',
-        networkId: ''        
+        subscriptionId: '',
+        notifyURL: '',
+        callbackData: '',
+        criteria:"",
+        destinationAddress: '',
+        notificationFormat: '',
+        title: ''
     });
-    this.objectSubClass = "MoAvailableNumber";
-}
-        
-OA.DmMoAvailableNumber.prototype.getDataID = function() {
-    return this.getID();
+    this.objectSubClass = "MoSubscription";
+    this.setAttr('title',this.getAttr('destinationAddress','') + ', ' + this.getAttr('criteria',''));
+    this.setChanged(false,false);
 }
 
-OA.DmMoAvailableNumber.className = "DmMoAvailableNumber";
-OA.DmMoAvailableNumber.fullClassName = 'dm.DmMoAvailableNumber';
-FM.DmObject.addSubClassType('MoAvailableNumber',OA.DmMoAvailableNumber);
-
-
-
+OA.DmMoSubscription.prototype.getDataID = function() {
+    return this.getAttr('subscriptionId','');
+}
+OA.DmMoSubscription.className = "DmMoSubscription";
+OA.DmMoSubscription.fullClassName = 'dm.DmMoSubscription';
+FM.DmObject.addSubClassType('MoSubscription',OA.DmMoSubscription);
 
 //-- USSD ----------------------------------------------------------------------
 OA.DmUSSDQuery = function() {
