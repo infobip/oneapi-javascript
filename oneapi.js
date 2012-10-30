@@ -4522,40 +4522,6 @@ OA.DmInboundQuery.className = "DmInboundQuery";
 OA.DmInboundQuery.fullClassName = 'dm.DmInboundQuery';
 FM.DmObject.addSubClassType('InboundQuery',OA.DmInboundQuery);
 
-// inbound subscription
-OA.DmMoSubscription = function() {
-    this._init.apply(this, arguments); // new poziva _init()
-}
-FM.extendClass(OA.DmMoSubscription, FM.DmObject); // extends FM.Object
-
-// properties
-OA.DmMoSubscription.prototype.objectSubClass = "";
-
-// methods
-OA.DmMoSubscription.prototype._init = function(attrs) {
-    this._super("_init",attrs, {        
-        subscriptionId: '',
-        notifyURL: '',
-        callbackData: '',
-        criteria:"",
-        destinationAddress: '',
-        notificationFormat: '',
-        title: ''
-    });
-    this.objectSubClass = "MoSubscription";
-    
-    this.setAttr('title',this.getAttr('destinationAddress','') + ', ' + this.getAttr('criteria',''));
-    this.setChanged(false,false);
-}
-        
-OA.DmMoSubscription.prototype.getDataID = function() {
-    return this.getAttr('subscriptionId','');
-}
-OA.DmMoSubscription.className = "DmMoSubscription";
-OA.DmMoSubscription.fullClassName = 'dm.DmMoSubscription';
-FM.DmObject.addSubClassType('MoSubscription',OA.DmMoSubscription);
-
-
 // -- Hlr requests -------------------------------------------------------------
 OA.DmTerminalRoamingQuery = function() {
     this._init.apply(this, arguments); // new poziva _init()
@@ -4677,38 +4643,37 @@ OA.DmInboundSmsMessage.className = "DmInboundSmsMessage";
 OA.DmInboundSmsMessage.fullClassName = 'dm.DmInboundSmsMessage';
 FM.DmObject.addSubClassType('InboundSmsMessage',OA.DmInboundSmsMessage);
 
-// -- Mo Available Numbers -----------------------------------------------------
-OA.DmMoAvailableNumber = function() {
+// MO subscription
+OA.DmMoSubscription = function() {
     this._init.apply(this, arguments); // new poziva _init()
 }
-FM.extendClass(OA.DmMoAvailableNumber, FM.DmObject); // extends FM.Object
+FM.extendClass(OA.DmMoSubscription, FM.DmObject); // extends FM.Object
 
 // properties
-OA.DmMoAvailableNumber.prototype.objectSubClass = "";
+OA.DmMoSubscription.prototype.objectSubClass = "";
 
 // methods
-OA.DmMoAvailableNumber.prototype._init = function(attrs) {
+OA.DmMoSubscription.prototype._init = function(attrs) {
     this._super("_init",attrs, {
-        id: '',
-        number: '',
-        free: '',
-        moNoTypeId: '',
-        gSMModemId: '',
-        networkId: ''        
+        subscriptionId: '',
+        notifyURL: '',
+        callbackData: '',
+        criteria:"",
+        destinationAddress: '',
+        notificationFormat: '',
+        title: ''
     });
-    this.objectSubClass = "MoAvailableNumber";
-}
-        
-OA.DmMoAvailableNumber.prototype.getDataID = function() {
-    return this.getID();
+    this.objectSubClass = "MoSubscription";
+    this.setAttr('title',this.getAttr('destinationAddress','') + ', ' + this.getAttr('criteria',''));
+    this.setChanged(false,false);
 }
 
-OA.DmMoAvailableNumber.className = "DmMoAvailableNumber";
-OA.DmMoAvailableNumber.fullClassName = 'dm.DmMoAvailableNumber';
-FM.DmObject.addSubClassType('MoAvailableNumber',OA.DmMoAvailableNumber);
-
-
-
+OA.DmMoSubscription.prototype.getDataID = function() {
+    return this.getAttr('subscriptionId','');
+}
+OA.DmMoSubscription.className = "DmMoSubscription";
+OA.DmMoSubscription.fullClassName = 'dm.DmMoSubscription';
+FM.DmObject.addSubClassType('MoSubscription',OA.DmMoSubscription);
 
 //-- USSD ----------------------------------------------------------------------
 OA.DmUSSDQuery = function() {
@@ -5153,62 +5118,6 @@ FM.DmList.addConfiguration('SMS_inbound_sub_delete', {
     responseParser: OA.responseParser
 });
 
-FM.DmList.addConfiguration('SMS_inbound_available', {
-    resourcePath: '/smsmessaging/inbound/available',
-    url: OA.getApiUrl,
-    
-    // ajax config
-    method: OA.getApiMethod,
-    resourceMethod: 'GET',
-    contentType: 'application/x-www-form-urlencoded',
-    params: {
-        countryId: true,
-        dateFrom: true,
-        dateTo: true,
-        criteria: true,
-        free: true,
-        page: true,
-        pageSize: true
-    },
-    headers: OA.getApiHeaders,
-    auth: null,
-    responseFormat: 'JSON',
-    validResponseCodes: '200',
-    listType: 'collection',
-    dataProperty: 'availableNumbers',
-    //
-    isErrorResponse: OA.isErrorResponse,
-    errorParser: OA.errorParser,
-    responseParser: OA.responseParser, 
-    // custom
-    _responseClass: OA.DmMoAvailableNumber
-});
-
-FM.DmList.addConfiguration('SMS_inbound_trial', {
-    resourcePath: '/smsmessaging/inbound/freeTrial',
-    url: OA.getApiUrl,
-    
-    // ajax config
-    method: OA.getApiMethod,
-    resourceMethod: 'POST',
-    contentType: 'application/x-www-form-urlencoded',
-    params: {
-        notifyURL: true
-    },
-    headers: OA.getApiHeaders,
-    auth: null,
-    responseFormat: 'JSON',
-    validResponseCodes: '200',
-    listType: 'collection',
-    dataProperty: 'availableNumbers',
-    //
-    isErrorResponse: OA.isErrorResponse,
-    errorParser: OA.errorParser,
-    responseParser: OA.responseParser, 
-    // custom
-    _responseClass: OA.DmMoAvailableNumber
-});
-
 FM.DmList.addConfiguration('SMS_inbound_get_messages', {
     resourcePath: '/smsmessaging/inbound/registrations/[:subscriptionId]/messages',
     url: OA.getApiUrl,
@@ -5600,6 +5509,7 @@ OA.AppOneApi.prototype.login = function(username, password,cbfn) {
             });
             dmlist.removeListener(lstnr);
             dmlist.dispose();
+            
             oCred.forEachAttr(function(name,value) {
                 OA.apiAuth.setAttr(name,value);
                 return true;
