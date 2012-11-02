@@ -1083,6 +1083,8 @@ if(typeof(FM) == 'undefined') {
     FM = function() {};
 }
 
+FM.dateTimeDivider = ' ';
+
 FM.dateToString = function(dat,utc) {
     var sy,sm,sd,sh,sn,ss;
     var d = dat;
@@ -1111,7 +1113,7 @@ FM.dateToString = function(dat,utc) {
         sy +
         (sm < 9 ? '-0' + sm : '-' + sm) +
         (sd < 9 ? '-0' + sd : '-' + sd) +
-        (sh < 9 ? ' 0' + sh : ' ' + sh) +
+        (sh < 9 ? ' 0' + sh : FM.dateTimeDivider + sh) +
         (sn < 9 ? ':0' + sn : ':' + sn) +
         (ss < 9 ? ':0' + ss : ':' + ss)
         );
@@ -1157,7 +1159,7 @@ FM.parseDateString = function(sdate,utc) { // '2010-05-26 05:56:00', true/false
 
     // dan
     if(fpos > -1) {
-        pos = sdate.indexOf(" ",fpos);
+        pos = sdate.indexOf(FM.dateTimeDivider,fpos);
         if(pos < 0) {
             sd = sdate.substr(fpos);
             fpos = -1;
@@ -1312,11 +1314,11 @@ FM.dateLocalFormat = function(d) {
 }
 
 FM.startOfHistory = function() {
-    return '1970-01-01 00:00:00';
+    return '1970-01-01' + FM.dateTimeDivider + '00:00:00';
 }
 
 FM.endOfHistory = function() {
-    return '2050-01-01 00:00:00';
+    return '2050-01-01' + FM.dateTimeDivider + '00:00:00';
 }
 
 FM.timestamp = function(date) {

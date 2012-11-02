@@ -12,6 +12,9 @@ OA.AppOneApi.prototype.appRegistry = null;
 
 
 OA.AppOneApi.prototype._init = function(attrs) {            
+    // set date format
+    FM.dateTimeDivider = 'T';
+    
     this.userID =  ''; // !test
     this.appRegistry = new FM.UtRegistry();
     this.customersList = new FM.DmList({},'cache');

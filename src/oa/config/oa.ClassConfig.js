@@ -316,7 +316,8 @@ OA.DmDeliveryInfo.prototype.objectSubClass = "";
 OA.DmDeliveryInfo.prototype._init = function(attrs) {
     this._super("_init",attrs, {
         address: '',
-        deliveryStatus: ''
+        deliveryStatus: '',
+        deliveryInfoMessage: ''
     });
     this.objectSubClass = "DeliveryInfo";
 }
@@ -482,6 +483,7 @@ OA.DmTerminalRoamingStatus.prototype._init = function(attrs) {
     this._super("_init",attrs, {
         address: '',
         currentRoaming: '',
+        currentRoamingInfoMessage: '',
         servingMccMnc: {
             mcc: '',
             mnc: ''
