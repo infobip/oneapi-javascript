@@ -96,7 +96,7 @@ if(substr($apiservice,  strlen($apiservice)-1) == '/') {
     $apiservice = substr($apiservice,0,strlen($apiservice)-1);
 }
 
-$destUrl = 'http://api.parseco.com' . $apiservice;
+$destUrl = 'http://oneapi.infobip.com' . $apiservice;
 
 $args = Array();
 foreach ($_REQUEST as $param => $value) {

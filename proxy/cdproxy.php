@@ -83,7 +83,7 @@ function executeRequest(
 $headers = _getallheaders();
 $restService = isset($headers['P-Rest-Service']) ? $headers['P-Rest-Service'] : '';
 
-$destUrl = 'http://api.parseco.com/1' . $restService;
+$destUrl = 'http://oneapi.infobip.com/1' . $restService;
 
 if (substr($destUrl, strlen($destUrl) - 1) == '/') {
     $destUrl = substr($destUrl, 0, strlen($destUrl) - 1);

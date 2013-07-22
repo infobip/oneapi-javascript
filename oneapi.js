@@ -4711,7 +4711,7 @@ FM.DmObject.addSubClassType('USSDQuery',OA.DmUSSDQuery);
  * ========================================================================== */
 
 // -- urls & proxy -------------------------------------------------------------
-OA.apiURL = 'http://api.parseco.com/1';
+OA.apiURL = 'http://oneapi.infobip.com/1';
 OA.proxyURL= '';
 OA.setProxy = function(url) {  
     OA.proxyURL = FM.isset(url) && url ? url : '';
